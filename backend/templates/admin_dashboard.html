@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Admin Dashboard — IDPDR (Intelligent Disease Prediction & Drug Recommendation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- PWA: manifest + icons + theme color -->
+<link rel="manifest" href="{% static 'manifest.json' %}"/>
+<meta name="theme-color" content="#00C2FF"/>
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}"/>
+<link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="IDPDR"/>
+<style>
+:root{
+  --bg:#050B18;--surface:#0D1628;--surface2:#121D35;--surface3:#19253F;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.11);
+  --teal:#0DFFD4;--teal-dim:rgba(13,255,212,0.1);
+  --violet:#7B2FFF;--violet-dim:rgba(123,47,255,0.13);
+  --amber:#FFB547;--amber-dim:rgba(255,181,71,0.1);
+  --rose:#FF4D6D;--rose-dim:rgba(255,77,109,0.1);
+  --green:#22D3A0;
+  --text:#E8EDF5;--text2:#8B95A8;--text3:#4B5568;
+  --sidebar-w:250px;--radius-sm:8px;--transition:.2s ease;
+}
+[data-theme="light"]{
+  --bg:#F1F4FB;--surface:#FFFFFF;--surface2:#F6F8FE;--surface3:#EEF1FC;
+  --border:rgba(15,23,42,0.08);--border2:rgba(15,23,42,0.12);
+  --text:#0F172A;--text2:#51607A;--text3:#94A1B8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+*{transition:background-color .25s ease,border-color .25s ease}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;transition:background-color .25s ease,color .25s ease}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 5% 5%,rgba(123,47,255,0.05) 0%,transparent 60%);
+}
+
+/* Sidebar */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;
+}
+.sb-logo{padding:24px 20px;border-bottom:1px solid var(--border);}
+.sb-logo-inner{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--teal),var(--violet));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-text{font-family:'Instrument Serif',serif;font-size:1.3rem;}
+.logo-text span{color:var(--teal);}
+.admin-badge{margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:var(--violet-dim);border:1px solid rgba(123,47,255,0.25);color:#a78bfa;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:10px;letter-spacing:.06em;text-transform:uppercase;}
+.sb-nav{flex:1;padding:16px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.sb-section{font-size:.6rem;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;padding:10px 10px 4px;font-weight:600;}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:9px;cursor:pointer;
+  color:var(--text2);font-size:.83rem;font-weight:500;
+  transition:.2s;border:1px solid transparent;
+}
+.sb-item:hover{background:var(--surface2);color:var(--text);}
+.sb-item.active{background:var(--violet-dim);color:#a78bfa;border-color:rgba(123,47,255,0.2);}
+.sb-item .si{font-size:1rem;width:18px;text-align:center;}
+.sb-footer{padding:14px;border-top:1px solid var(--border);position:relative;}
+
+/* Profile dropdown (adapted to admin violet/teal palette) */
+.profile-trigger{width:100%;display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s;text-align:left;font-family:inherit;color:inherit}
+.profile-trigger:hover{border-color:rgba(123,47,255,0.3)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--teal));display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#050B18;flex-shrink:0;}
+.user-info{flex:1;overflow:hidden;}
+.user-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-role{font-size:.68rem;color:#a78bfa;}
+.pm-chevron{color:var(--text3);transition:transform .25s ease;flex-shrink:0}
+.profile-trigger.menu-open .pm-chevron{transform:rotate(180deg)}
+.profile-dropdown{
+  position:absolute;left:14px;right:14px;bottom:calc(100% + 8px);
+  background:var(--surface);border:1px solid var(--border2);border-radius:14px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.4);padding:8px;z-index:500;
+  opacity:0;visibility:hidden;transform:translateY(8px) scale(.98);transform-origin:bottom left;
+  transition:opacity .18s ease,transform .18s ease,visibility .18s;
+  max-height:min(70vh,520px);overflow-y:auto;
+}
+.profile-dropdown.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.pd-header{display:flex;align-items:center;gap:11px;padding:10px 8px 12px}
+.pd-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--teal));display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#050B18;flex-shrink:0}
+.pd-name{font-size:.88rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px}
+.pd-role-badge{display:inline-flex;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:3px;letter-spacing:.03em;text-transform:uppercase;background:var(--violet-dim);color:#a78bfa;}
+.pd-divider{height:1px;background:var(--border);margin:6px 4px}
+.pd-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:8px;color:var(--text2);font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s ease;text-align:left;font-family:inherit}
+.pd-item:hover{background:var(--surface2);color:var(--text)}
+.pd-item.pd-danger{color:var(--rose)}
+.pd-item.pd-danger:hover{background:var(--rose-dim)}
+.pd-arrow{margin-left:auto;color:var(--text3);transition:transform .2s ease}
+.pd-item.submenu-open .pd-arrow{transform:rotate(90deg)}
+.pd-submenu{max-height:0;overflow:hidden;transition:max-height .22s ease}
+.pd-submenu.open{max-height:160px}
+.pd-theme-opt{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px 8px 32px;background:none;border:none;border-radius:8px;color:var(--text2);font-size:.78rem;font-weight:500;cursor:pointer;text-align:left;font-family:inherit;transition:all .15s ease}
+.pd-theme-opt:hover{background:var(--surface2);color:var(--text)}
+.pd-theme-opt.active{color:var(--teal);font-weight:700}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);flex:1;position:relative;z-index:1;}
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(5,11,24,0.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+[data-theme="light"] .topbar{background:rgba(241,244,251,0.88);}
+.topbar-left{font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:8px;}
+.topbar-left strong{color:var(--text);}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.73rem;font-weight:600;}
+.chip-violet{background:var(--violet-dim);border:1px solid rgba(123,47,255,0.22);color:#a78bfa;}
+.chip-teal{background:var(--teal-dim);border:1px solid rgba(13,255,212,0.2);color:var(--teal);}
+
+.content{padding:28px;max-width:1320px;}
+.page{display:none;}
+.page.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+.page-header h1{font-family:'Instrument Serif',serif;font-size:1.9rem;letter-spacing:-0.03em;margin-bottom:5px;}
+.page-header h1 em{font-style:italic;color:var(--teal);}
+.page-header p{color:var(--text2);font-size:.875rem;}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden;margin-bottom:18px;}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.015) 0%,transparent 60%);pointer-events:none;}
+.card-accent-violet{border-top:2px solid var(--violet);}
+.card-accent-teal{border-top:2px solid var(--teal);}
+.card-accent-amber{border-top:2px solid var(--amber);}
+.card-accent-rose{border-top:2px solid var(--rose);}
+.card-eyebrow{font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px;}
+.card-title{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:9px;margin-bottom:20px;}
+.card-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.ci-v{background:var(--violet-dim);color:#a78bfa;}
+.ci-t{background:var(--teal-dim);color:var(--teal);}
+.ci-a{background:var(--amber-dim);color:var(--amber);}
+.ci-r{background:var(--rose-dim);color:var(--rose);}
+.ci-g{background:rgba(34,211,160,.1);color:var(--green);}
+
+/* Grid */
+.grid{display:grid;gap:18px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:1fr 1fr 1fr;}
+.g4{grid-template-columns:repeat(4,1fr);}
+.mb-18{margin-bottom:18px;}
+
+/* Stat cards */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;}
+.stat-label{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px;}
+.stat-value{font-family:'Instrument Serif',serif;font-size:2.4rem;line-height:1;letter-spacing:-0.04em;margin-bottom:6px;}
+.stat-sub{font-size:.75rem;color:var(--text2);}
+.stat-icon{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:2.2rem;opacity:.07;}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+.data-table th{text-align:left;padding:10px 14px;font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border);font-weight:600;}
+.data-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(255,255,255,0.015);}
+.table-wrap{overflow-x:auto;}
+.role-pill{display:inline-flex;align-items:center;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:8px;border:none;cursor:default;}
+.rp-admin{background:var(--violet-dim);color:#a78bfa;border:1px solid rgba(123,47,255,0.2);}
+.rp-patient{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(13,255,212,0.15);}
+.status-pill{display:inline-flex;align-items:center;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:8px;}
+.sp-active{background:rgba(34,211,160,.1);color:var(--green);border:1px solid rgba(34,211,160,.2);}
+.sp-inactive{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(255,77,109,.2);}
+.cond-tag{display:inline-flex;background:rgba(34,211,160,.1);color:var(--green);border:1px solid rgba(34,211,160,.2);font-size:.7rem;padding:2px 8px;border-radius:8px;font-weight:600;}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.mini-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:.7rem;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:.15s;font-family:inherit;}
+.mini-btn:hover{border-color:var(--violet);color:#a78bfa;}
+.mini-btn.danger:hover{border-color:var(--rose);color:var(--rose);}
+
+/* Chart */
+.chart-wrap{position:relative;height:230px;}
+
+/* Status dot */
+.status-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;display:inline-block;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+
+/* Quick actions */
+.action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.action-card{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
+  padding:16px;text-align:center;cursor:pointer;transition:.2s;
+}
+.action-card:hover{border-color:var(--violet);transform:translateY(-2px);}
+.action-icon{font-size:1.5rem;margin-bottom:8px;}
+.action-label{font-size:.78rem;font-weight:600;color:var(--text2);}
+
+/* Forms */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:.72rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 12px;font-size:.85rem;font-family:inherit;outline:none;transition:.2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-dim);}
+.form-textarea{resize:vertical;min-height:70px;}
+.btn{padding:10px 18px;border-radius:9px;font-size:.83rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.2s;}
+.btn-primary{background:var(--violet);color:#fff;}
+.btn-primary:hover{background:#8b45ff;transform:translateY(-1px);}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);}
+.btn-secondary:hover{border-color:var(--violet);color:#a78bfa;}
+.toggle-switch{position:relative;display:inline-block;width:42px;height:23px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--surface3);border:1px solid var(--border2);transition:.2s;border-radius:24px;}
+.toggle-slider:before{position:absolute;content:"";height:15px;width:15px;left:3px;bottom:3px;background:var(--text3);transition:.2s;border-radius:50%;}
+.toggle-switch input:checked + .toggle-slider{background:var(--violet-dim);border-color:var(--violet);}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(19px);background:var(--violet);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);gap:16px;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row-label{font-size:.85rem;font-weight:600;}
+.setting-row-sub{font-size:.75rem;color:var(--text3);margin-top:2px;}
+.empty-note{color:var(--text3);text-align:center;padding:24px;font-size:.83rem;}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar .form-input,.filter-bar .form-select{width:auto;min-width:180px;}
+
+/* Mobile nav: hamburger + drawer overlay (admin shell had none before;
+   this mirrors the pattern already used on the patient dashboard). */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text2);font-size:1.3rem;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:190;}
+@media(max-width:1024px){
+  .hamburger{display:flex;}
+}
+</style>
+<!-- Responsive/PWA layer: loaded after the page's own <style> block so it
+     can patch layout (drawer transforms, stacked grids, touch targets)
+     without editing the rules above. -->
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}"/>
+
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <div class="logo-icon">⚕</div>
+      <div class="logo-text">IDP<span>DR</span></div>
+    </div>
+    <div class="admin-badge">🛡 Admin Panel</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Overview</div>
+    <div class="sb-item active" onclick="showPage('overview',this)"><span class="si">⬡</span>Dashboard</div>
+    <div class="sb-item" onclick="showPage('analytics',this)"><span class="si">📊</span>Analytics Dashboard</div>
+    <div class="sb-section">Management</div>
+    <div class="sb-item" onclick="showPage('users',this)"><span class="si">👥</span>User Management</div>
+    <div class="sb-item" onclick="showPage('drugs',this)"><span class="si">💊</span>Drug Database</div>
+    <div class="sb-item" onclick="showPage('predictions',this)"><span class="si">🔬</span>All Predictions</div>
+    <div class="sb-section">Security</div>
+    <div class="sb-item" onclick="showPage('audit',this)"><span class="si">📜</span>Audit Logs</div>
+    <div class="sb-item" onclick="showPage('settings',this)"><span class="si">⚙️</span>System Settings</div>
+    <div class="sb-section">Developer</div>
+    <div class="sb-item" onclick="showPage('api',this)"><span class="si">🔌</span>API Reference</div>
+    <div class="sb-item" onclick="showPage('system',this)"><span class="si">🖥</span>System Info</div>
+    <div class="sb-section">Navigation</div>
+    <div class="sb-item" onclick="window.location.href='/'"><span class="si">🏠</span>Patient Dashboard</div>
+    <div class="sb-item" onclick="window.location.href='/admin/'"><span class="si">🔧</span>Django Admin</div>
+  </nav>
+  <div class="sb-footer" id="profile-menu-wrap">
+    <button class="profile-trigger" id="profile-trigger" onclick="toggleProfileMenu(event)">
+      <div class="user-avatar" id="ua-initial">A</div>
+      <div class="user-info">
+        <div class="user-name" id="ua-name">Admin</div>
+        <div class="user-role">🛡 Administrator</div>
+      </div>
+      <svg class="pm-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+    <div class="profile-dropdown" id="profile-dropdown">
+      <div class="pd-header">
+        <div class="pd-avatar" id="pd-avatar">A</div>
+        <div style="min-width:0">
+          <div class="pd-name" id="pd-name">Admin</div>
+          <span class="pd-role-badge">Administrator</span>
+        </div>
+      </div>
+      <div class="pd-divider"></div>
+      <button class="pd-item" onclick="window.location.href='/'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        My Profile
+      </button>
+      <button class="pd-item" onclick="showPage('settings',document.querySelector('[onclick*=settings]'));closeProfileMenu()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        System Settings
+      </button>
+      <button class="pd-item" id="pd-appearance-toggle" onclick="toggleAppearanceSubmenu(event)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        Appearance
+        <svg class="pd-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <div class="pd-submenu" id="appearance-submenu">
+        <button class="pd-theme-opt" data-theme-opt="light" onclick="setTheme('light')">☀️ Light</button>
+        <button class="pd-theme-opt" data-theme-opt="dark" onclick="setTheme('dark')">🌙 Dark</button>
+        <button class="pd-theme-opt" data-theme-opt="system" onclick="setTheme('system')">💻 System</button>
+      </div>
+      <div class="pd-divider"></div>
+      <button class="pd-item" onclick="window.open('mailto:support@idpdr.ai')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Help &amp; Support
+      </button>
+      <div class="pd-divider"></div>
+      <button class="pd-item pd-danger" onclick="window.location.href='/signout/'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Sign Out
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">☰</button>
+    <div class="topbar-left">🛡 <strong id="tb-title">Admin Overview</strong></div>
+    <div class="topbar-right">
+      <span class="chip chip-teal"><span class="status-dot"></span> System Online</span>
+      <span class="chip chip-violet">IDPDR v1.0</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- OVERVIEW PAGE -->
+  <div class="page active" id="page-overview">
+    <div class="page-header">
+      <h1>Admin <em>Overview</em></h1>
+      <p style="font-weight:600;margin-bottom:3px">An Intelligent Disease Prediction and Drug Recommendation Prototype — Using Multiple Approaches of Machine Learning Algorithms</p>
+      <p>Real-time summary of all system activity, users, and predictions.</p>
+    </div>
+
+    <div class="grid g4 mb-18">
+      <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="s-users" style="color:var(--violet)">—</div>
+        <div class="stat-sub"><span id="s-patients">—</span> patients · <span id="s-admins">—</span> admins</div>
+        <div class="stat-icon">👥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Predictions</div>
+        <div class="stat-value" id="s-preds" style="color:var(--teal)">—</div>
+        <div class="stat-sub">diagnoses run</div>
+        <div class="stat-icon">🔬</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Diagnosis Reports</div>
+        <div class="stat-value" id="s-diags" style="color:var(--amber)">—</div>
+        <div class="stat-sub">generated by patients</div>
+        <div class="stat-icon">📋</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Managed Drugs</div>
+        <div class="stat-value" id="s-drugs" style="color:var(--green)">—</div>
+        <div class="stat-sub">admin-added entries</div>
+        <div class="stat-icon">💊</div>
+      </div>
+    </div>
+
+    <div class="grid g2 mb-18">
+      <div class="card card-accent-violet">
+        <div class="card-eyebrow">Recent</div>
+        <div class="card-title"><div class="card-icon ci-v">👥</div>New Users</div>
+        <div class="table-wrap">
+        <table class="data-table" id="users-table">
+          <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody id="users-tbody"><tr><td colspan="4" style="color:var(--text3);text-align:center;padding:20px">Loading…</td></tr></tbody>
+        </table>
+        </div>
+      </div>
+      <div class="card card-accent-teal">
+        <div class="card-eyebrow">Recent</div>
+        <div class="card-title"><div class="card-icon ci-t">🔬</div>Latest Predictions</div>
+        <div class="table-wrap">
+        <table class="data-table" id="preds-table">
+          <thead><tr><th>Condition</th><th>Symptoms</th><th>Time</th></tr></thead>
+          <tbody id="preds-tbody"><tr><td colspan="3" style="color:var(--text3);text-align:center;padding:20px">Loading…</td></tr></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-accent-amber">
+      <div class="card-eyebrow">Quick Actions</div>
+      <div class="card-title"><div class="card-icon ci-a">⚡</div>Admin Controls</div>
+      <div class="action-grid">
+        <div class="action-card" onclick="showPage('analytics',document.querySelector('[onclick*=analytics]'))">
+          <div class="action-icon">📊</div>
+          <div class="action-label">Analytics</div>
+        </div>
+        <div class="action-card" onclick="showPage('users',document.querySelector('[onclick*=users]'))">
+          <div class="action-icon">👥</div>
+          <div class="action-label">Manage Users</div>
+        </div>
+        <div class="action-card" onclick="showPage('drugs',document.querySelector('[onclick*=drugs]'))">
+          <div class="action-icon">💊</div>
+          <div class="action-label">Drug Database</div>
+        </div>
+        <div class="action-card" onclick="showPage('audit',document.querySelector('[onclick*=audit]'))">
+          <div class="action-icon">📜</div>
+          <div class="action-label">Audit Logs</div>
+        </div>
+        <div class="action-card" onclick="showPage('settings',document.querySelector('[onclick*=settings]'))">
+          <div class="action-icon">⚙️</div>
+          <div class="action-label">System Settings</div>
+        </div>
+        <div class="action-card" onclick="showPage('api',document.querySelector('[onclick*=api]'))">
+          <div class="action-icon">🔌</div>
+          <div class="action-label">API Reference</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS PAGE -->
+  <div class="page" id="page-users">
+    <div class="page-header">
+      <h1>User <em>Management</em></h1>
+      <p>All registered users — change roles, activate/deactivate, or remove accounts.</p>
+    </div>
+    <div class="filter-bar">
+      <input class="form-input" id="user-search" placeholder="🔍 Search by username, name, or email..." onkeydown="if(event.key==='Enter')loadUsersFull()"/>
+      <button class="btn btn-secondary" onclick="loadUsersFull()">Search</button>
+    </div>
+    <div class="card card-accent-violet">
+      <div class="card-title"><div class="card-icon ci-v">👥</div>All Registered Users <span id="users-count-badge" style="margin-left:auto;font-size:.7rem;color:var(--text3);font-weight:500"></span></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Last Login</th><th>Actions</th></tr></thead>
+          <tbody id="all-users-tbody"><tr><td colspan="9" class="empty-note">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRUG DATABASE MANAGEMENT PAGE -->
+  <div class="page" id="page-drugs">
+    <div class="page-header">
+      <h1>Drug Database <em>Management</em></h1>
+      <p>Add, edit, or remove drug entries. These merge into the Patient Dashboard's Drug Search &amp; Drug Report alongside the built-in knowledge base.</p>
+    </div>
+
+    <div class="card card-accent-teal" id="drug-form-card">
+      <div class="card-title"><div class="card-icon ci-t">➕</div><span id="drug-form-title">Add a New Drug</span></div>
+      <input type="hidden" id="drug-edit-id"/>
+      <div class="grid g3">
+        <div class="form-group"><label class="form-label">Drug Name *</label><input class="form-input" id="drug-name" placeholder="e.g. Paracetamol"/></div>
+        <div class="form-group"><label class="form-label">Generic Name</label><input class="form-input" id="drug-generic"/></div>
+        <div class="form-group"><label class="form-label">Drug Class</label><input class="form-input" id="drug-class"/></div>
+        <div class="form-group"><label class="form-label">Condition / Use</label><input class="form-input" id="drug-condition" placeholder="e.g. Pain"/></div>
+        <div class="form-group"><label class="form-label">Brand Names</label><input class="form-input" id="drug-brands" placeholder="Comma-separated"/></div>
+        <div class="form-group"><label class="form-label">Dosage</label><input class="form-input" id="drug-dosage" placeholder="e.g. 500mg every 6 hours"/></div>
+        <div class="form-group"><label class="form-label">Price (₹)</label><input class="form-input" id="drug-price" placeholder="e.g. ₹20–60 per strip"/></div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:22px">
+          <label class="toggle-switch"><input type="checkbox" id="drug-rx" checked/><span class="toggle-slider"></span></label>
+          <span style="font-size:.83rem;color:var(--text2)">Prescription required</span>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="drug-description"></textarea></div>
+      <div class="grid g2">
+        <div class="form-group"><label class="form-label">Side Effects</label><textarea class="form-textarea" id="drug-side-effects" placeholder="Comma-separated"></textarea></div>
+        <div class="form-group"><label class="form-label">Contraindications</label><textarea class="form-textarea" id="drug-contraindications" placeholder="Comma-separated"></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="saveDrug()" id="drug-save-btn">➕ Add Drug</button>
+        <button class="btn btn-secondary" onclick="resetDrugForm()" id="drug-cancel-btn" style="display:none">Cancel Edit</button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <input class="form-input" id="drug-search-q" placeholder="🔍 Search managed drugs..." onkeydown="if(event.key==='Enter')loadDrugs()"/>
+      <button class="btn btn-secondary" onclick="loadDrugs()">Search</button>
+    </div>
+    <div class="card card-accent-violet">
+      <div class="card-title"><div class="card-icon ci-v">💊</div>Admin-Managed Drugs <span id="drugs-count-badge" style="margin-left:auto;font-size:.7rem;color:var(--text3);font-weight:500"></span></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Generic</th><th>Condition</th><th>Dosage</th><th>Rx</th><th>Added</th><th>Actions</th></tr></thead>
+          <tbody id="drugs-tbody"><tr><td colspan="7" class="empty-note">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREDICTIONS PAGE -->
+  <div class="page" id="page-predictions">
+    <div class="page-header">
+      <h1>All <em>Predictions</em></h1>
+      <p>Full history of ML disease-prediction runs across all patients.</p>
+    </div>
+    <div class="card card-accent-teal">
+      <div class="card-title"><div class="card-icon ci-t">🔬</div>Prediction History</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Condition</th><th>Symptoms</th><th>Time</th></tr></thead>
+          <tbody id="all-preds-tbody"><tr><td colspan="4" class="empty-note">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOGS PAGE -->
+  <div class="page" id="page-audit">
+    <div class="page-header">
+      <h1>Audit <em>Logs</em></h1>
+      <p>Security-relevant events: logins, logouts, registrations, password changes, role changes, and admin CRUD actions.</p>
+    </div>
+    <div class="filter-bar">
+      <input class="form-input" id="audit-search" placeholder="🔍 Search by username or detail..." onkeydown="if(event.key==='Enter')loadAuditLogs()"/>
+      <select class="form-select" id="audit-action-filter" onchange="loadAuditLogs()">
+        <option value="">All actions</option>
+      </select>
+    </div>
+    <div class="card card-accent-rose">
+      <div class="card-title"><div class="card-icon ci-r">📜</div>Recent Events <span id="audit-count-badge" style="margin-left:auto;font-size:.7rem;color:var(--text3);font-weight:500"></span></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Action</th><th>User</th><th>Detail</th><th>IP Address</th><th>Time</th></tr></thead>
+          <tbody id="audit-tbody"><tr><td colspan="5" class="empty-note">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS PAGE -->
+  <div class="page" id="page-analytics">
+    <div class="page-header">
+      <h1>Analytics <em>Dashboard</em></h1>
+      <p>Platform-wide statistics: user base, sentiment distribution, condition trends, and drug ratings.</p>
+    </div>
+    <div class="grid g4 mb-18">
+      <div class="stat-card"><div class="stat-label">Active Users</div><div class="stat-value" id="an-active" style="color:var(--green)">—</div><div class="stat-sub">currently enabled</div><div class="stat-icon">✅</div></div>
+      <div class="stat-card"><div class="stat-label">Inactive Users</div><div class="stat-value" id="an-inactive" style="color:var(--rose)">—</div><div class="stat-sub">deactivated accounts</div><div class="stat-icon">🚫</div></div>
+      <div class="stat-card"><div class="stat-label">Total Reviews</div><div class="stat-value" id="an-reviews" style="color:var(--teal)">—</div><div class="stat-sub">drug reviews analyzed</div><div class="stat-icon">💬</div></div>
+      <div class="stat-card"><div class="stat-label">Total Searches</div><div class="stat-value" id="an-searches" style="color:var(--violet)">—</div><div class="stat-sub">drug/condition lookups</div><div class="stat-icon">🔍</div></div>
+    </div>
+    <div class="grid g2 mb-18">
+      <div class="card card-accent-teal">
+        <div class="card-title"><div class="card-icon ci-t">💬</div>Review Sentiment Breakdown</div>
+        <div class="chart-wrap"><canvas id="chart-sentiment"></canvas></div>
+      </div>
+      <div class="card card-accent-violet">
+        <div class="card-title"><div class="card-icon ci-v">🏆</div>Top Predicted Conditions</div>
+        <div class="chart-wrap"><canvas id="chart-conditions"></canvas></div>
+      </div>
+    </div>
+    <div class="card card-accent-amber">
+      <div class="card-title"><div class="card-icon ci-a">⭐</div>Average Rating by Condition</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Condition</th><th>Avg Rating</th><th>Review Count</th></tr></thead>
+          <tbody id="rating-by-condition-tbody"><tr><td colspan="3" class="empty-note">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+    <div class="page-header">
+      <h1>System <em>Settings</em></h1>
+      <p>Global, application-wide configuration.</p>
+    </div>
+    <div class="card card-accent-violet" style="max-width:640px">
+      <div class="card-title"><div class="card-icon ci-v">⚙️</div>General</div>
+      <div class="form-group"><label class="form-label">Site Name</label><input class="form-input" id="set-site-name"/></div>
+      <div class="form-group"><label class="form-label">Support Email</label><input class="form-input" id="set-support-email"/></div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-row-label">Allow New Registrations</div>
+          <div class="setting-row-sub">If disabled, the public Sign Up page will reject new patient accounts.</div>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="set-allow-registration"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-row-label">Maintenance Mode</div>
+          <div class="setting-row-sub">Blocks non-admin logins while enabled. Administrators can still sign in.</div>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="set-maintenance-mode"/><span class="toggle-slider"></span></label>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="saveSettings()">💾 Save Settings</button>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:10px" id="settings-updated-note"></div>
+    </div>
+  </div>
+
+  <!-- API REFERENCE PAGE -->
+  <div class="page" id="page-api">
+    <div class="page-header">
+      <h1>API <em>Reference</em></h1>
+      <p>IDPDR REST API v1.0 — developer documentation. Base URL: <code style="color:var(--teal)">http://localhost:8000/api/</code>. All endpoints require an authenticated session except <code>/api/health/</code>.</p>
+    </div>
+    <div class="card card-accent-teal">
+      <div class="card-title"><div class="card-icon ci-t">🧬</div>Patient-facing Endpoints</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/health/</code></td><td>System health check (public, used to prime CSRF cookie)</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/conditions/</code></td><td>All 12 conditions with symptoms</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/predict/</code></td><td>4-model ensemble disease diagnosis</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/recommend/?condition=X</code></td><td>Top scored drugs for a condition</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/recommend/all/</code></td><td>Top drugs for all conditions</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/sentiment/</code></td><td>VADER NLP sentiment on drug review</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/compare/?condition=X&drug_a=Y&drug_b=Z</code></td><td>Extended drug comparison</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/dashboard/</code></td><td>Aggregated platform statistics</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/drug/search/?q=X</code></td><td>Search drugs by name/generic/brand (empty q = browse all)</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/drug/report/?drug=X</code></td><td>Full drug profile</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/drug/report/pdf/?drug=X</code></td><td>Drug report as downloadable/printable PDF</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/drug/buy/?drug=X</code></td><td>Availability, price, pharmacy references</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/interactions/</code></td><td>Multi-drug interaction severity checker</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/disease/?condition=X</code></td><td>Disease info: symptoms, treatment, emergency signs</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/smart-recommend/</code></td><td>AI personalized recommendation from symptoms</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/diagnosis/report/</code></td><td>Generate &amp; persist a Disease Diagnosis Report</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/diagnosis/reports/</code></td><td>List the signed-in user's saved reports</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/diagnosis/report/&lt;id&gt;/pdf/</code></td><td>Diagnosis report as PDF</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card card-accent-violet">
+      <div class="card-title"><div class="card-icon ci-v">🛡</div>Admin-only Endpoints <span style="margin-left:auto;font-size:.68rem;color:var(--text3);font-weight:500">Require role = admin</span></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/admin/users/</code></td><td>List/search all users</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/admin/users/&lt;id&gt;/role/</code></td><td>Promote/demote a user's role</td></tr>
+            <tr><td><span class="cond-tag">POST</span></td><td><code>/api/admin/users/&lt;id&gt;/toggle-active/</code></td><td>Activate/deactivate a user</td></tr>
+            <tr><td><span class="cond-tag">DELETE</span></td><td><code>/api/admin/users/&lt;id&gt;/</code></td><td>Delete a user account</td></tr>
+            <tr><td><span class="cond-tag">GET</span> / <span class="cond-tag">POST</span></td><td><code>/api/admin/drugs/</code></td><td>List or create managed drug entries</td></tr>
+            <tr><td><span class="cond-tag">GET</span> / <span class="cond-tag">PUT</span> / <span class="cond-tag">DELETE</span></td><td><code>/api/admin/drugs/&lt;id&gt;/</code></td><td>View, update, or delete a managed drug</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/admin/audit-logs/</code></td><td>View/filter audit log events</td></tr>
+            <tr><td><span class="cond-tag">GET</span> / <span class="cond-tag">POST</span></td><td><code>/api/admin/settings/</code></td><td>View or update system settings</td></tr>
+            <tr><td><span class="cond-tag">GET</span></td><td><code>/api/admin/analytics/</code></td><td>Extended platform analytics</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM INFO PAGE -->
+  <div class="page" id="page-system">
+    <div class="page-header">
+      <h1>System <em>Info</em></h1>
+      <p>Runtime environment and model status.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card card-accent-teal">
+        <div class="card-title"><div class="card-icon ci-t">🧠</div>ML Models</div>
+        <div class="setting-row"><div class="setting-row-label">Disease Prediction Ensemble</div><span class="status-pill sp-active">Loaded</span></div>
+        <div class="setting-row"><div class="setting-row-label">Drug Recommendation Engine</div><span class="status-pill sp-active">Loaded</span></div>
+        <div class="setting-row"><div class="setting-row-label">VADER Sentiment Analyzer</div><span class="status-pill sp-active">Loaded</span></div>
+        <div class="setting-row"><div class="setting-row-label">TF-IDF Symptom Vectorizer</div><span class="status-pill sp-active">Loaded</span></div>
+      </div>
+      <div class="card card-accent-violet">
+        <div class="card-title"><div class="card-icon ci-v">🔧</div>Quick Links</div>
+        <div class="action-grid">
+          <div class="action-card" onclick="window.location.href='/admin/'"><div class="action-icon">🔧</div><div class="action-label">Django Admin</div></div>
+          <div class="action-card" onclick="window.location.href='/'"><div class="action-icon">🏠</div><div class="action-label">Patient Dashboard</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script>
+/* ── CSRF / fetch helper ── */
+function getCookie(name){
+  let v=null;
+  document.cookie.split(';').forEach(c=>{
+    const p=c.trim().split('=');
+    if(p[0]===name)v=decodeURIComponent(p[1]||'');
+  });
+  return v;
+}
+async function apiFetch(url,opts={}){
+  opts.headers=opts.headers||{};
+  opts.credentials='include';
+  if(opts.method && opts.method!=='GET'){
+    if(!opts.headers['X-CSRFToken'])opts.headers['X-CSRFToken']=getCookie('csrftoken')||'';
+  }
+  const resp=await fetch(url,opts);
+  const data=await resp.json().catch(()=>({}));
+  if(!resp.ok)throw new Error(data.error||`Request failed (${resp.status})`);
+  return data;
+}
+function toast(msg,type='success'){
+  let t=document.getElementById('mr-toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='mr-toast';
+    t.style.cssText='position:fixed;bottom:24px;right:24px;z-index:2000;padding:12px 18px;border-radius:10px;font-size:.85rem;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,.35);transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px)';
+    document.body.appendChild(t);
+  }
+  t.textContent=(type==='error'?'❌ ':'✅ ')+msg;
+  t.style.background=type==='error'?'var(--rose)':'var(--teal)';
+  t.style.color=type==='error'?'#fff':'#050B18';
+  requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateY(0)';});
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(10px)';},3200);
+}
+
+/* ── THEME SYSTEM (Light / Dark / System) ── */
+function applyTheme(pref){
+  const sysDark=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const effective=pref==='system'?(sysDark?'dark':'light'):pref;
+  document.documentElement.setAttribute('data-theme',effective);
+  document.querySelectorAll('.pd-theme-opt').forEach(b=>b.classList.toggle('active',b.dataset.themeOpt===pref));
+}
+function setTheme(pref){
+  localStorage.setItem('idpdr-theme',pref);
+  applyTheme(pref);
+}
+(function(){
+  const saved=localStorage.getItem('idpdr-theme')||'dark';
+  applyTheme(saved);
+  if(window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+      if((localStorage.getItem('idpdr-theme')||'dark')==='system')applyTheme('system');
+    });
+  }
+})();
+
+/* ── PROFILE DROPDOWN ── */
+function toggleProfileMenu(e){
+  if(e)e.stopPropagation();
+  const dd=document.getElementById('profile-dropdown');
+  const trig=document.getElementById('profile-trigger');
+  const open=dd.classList.toggle('open');
+  trig.classList.toggle('menu-open',open);
+}
+function closeProfileMenu(){
+  document.getElementById('profile-dropdown').classList.remove('open');
+  document.getElementById('profile-trigger').classList.remove('menu-open');
+  document.getElementById('appearance-submenu').classList.remove('open');
+}
+function toggleAppearanceSubmenu(e){
+  if(e)e.stopPropagation();
+  document.getElementById('appearance-submenu').classList.toggle('open');
+  document.getElementById('pd-appearance-toggle').classList.toggle('submenu-open');
+}
+document.addEventListener('click',(e)=>{
+  const wrap=document.getElementById('profile-menu-wrap');
+  if(wrap && !wrap.contains(e.target))closeProfileMenu();
+});
+
+/* ── PAGE NAVIGATION ── */
+const PAGE_TITLES={overview:'Admin Overview',users:'User Management',drugs:'Drug Database Management',
+  predictions:'All Predictions',audit:'Audit Logs',analytics:'Analytics Dashboard',
+  settings:'System Settings',api:'API Reference',system:'System Info'};
+function showPage(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('tb-title').textContent=PAGE_TITLES[page]||'Admin';
+  if(page==='users')loadUsersFull();
+  if(page==='drugs')loadDrugs();
+  if(page==='predictions')loadAllPredictions();
+  if(page==='audit')loadAuditLogs();
+  if(page==='analytics')loadAnalytics();
+  if(page==='settings')loadSettings();
+  closeSidebar(); // auto-close the mobile drawer after choosing a section
+}
+
+/* ── Mobile drawer controls (off-canvas sidebar) ── */
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+
+/* ── OVERVIEW ── */
+async function loadOverview(){
+  try{
+    const me=await apiFetch('/api/auth/me/');
+    if(me.authenticated){
+      const initial=(me.first_name?.[0]||me.username[0]).toUpperCase();
+      document.getElementById('ua-initial').textContent=initial;
+      document.getElementById('ua-name').textContent=me.first_name||me.username;
+      document.getElementById('pd-avatar').textContent=initial;
+      document.getElementById('pd-name').textContent=me.first_name?`${me.first_name} ${me.last_name||''}`.trim():me.username;
+    }
+    const stats=await apiFetch('/api/admin/analytics/');
+    document.getElementById('s-users').textContent=stats.total_users;
+    document.getElementById('s-patients').textContent=stats.total_patients;
+    document.getElementById('s-admins').textContent=stats.total_admins;
+    document.getElementById('s-preds').textContent=stats.total_predictions;
+    document.getElementById('s-diags').textContent=stats.total_diagnosis_reports;
+    document.getElementById('s-drugs').textContent=stats.total_managed_drugs;
+
+    document.getElementById('preds-tbody').innerHTML=(stats.top_conditions||[]).length
+      ? stats.top_conditions.slice(0,5).map(c=>`<tr><td><span class="cond-tag">${c.predicted_condition}</span></td><td colspan="1" style="color:var(--text3)">—</td><td>${c.count} runs</td></tr>`).join('')
+      : `<tr><td colspan="3" class="empty-note">No predictions yet</td></tr>`;
+
+    const recent=await apiFetch('/api/admin/users/');
+    document.getElementById('users-tbody').innerHTML=(recent.users||[]).slice(0,5).map(u=>`
+      <tr><td>${u.username}</td><td>${u.email||'—'}</td><td><span class="role-pill ${u.role==='admin'?'rp-admin':'rp-patient'}">${u.role}</span></td><td>${u.date_joined}</td></tr>
+    `).join('') || `<tr><td colspan="4" class="empty-note">No users yet</td></tr>`;
+  }catch(e){toast('Failed to load overview: '+e.message,'error');}
+}
+
+/* ── USER MANAGEMENT ── */
+async function loadUsersFull(){
+  const q=document.getElementById('user-search').value.trim();
+  const tbody=document.getElementById('all-users-tbody');
+  tbody.innerHTML=`<tr><td colspan="9" class="empty-note">Loading…</td></tr>`;
+  try{
+    const d=await apiFetch(`/api/admin/users/?q=${encodeURIComponent(q)}`);
+    document.getElementById('users-count-badge').textContent=`${d.total} total`;
+    if(!d.users.length){tbody.innerHTML=`<tr><td colspan="9" class="empty-note">No users found</td></tr>`;return;}
+    tbody.innerHTML=d.users.map((u,i)=>`
+      <tr>
+        <td>${i+1}</td><td>${u.username}</td><td>${(u.first_name||'')+' '+(u.last_name||'')}</td><td>${u.email||'—'}</td>
+        <td>
+          <select class="form-select" style="width:auto;padding:4px 8px;font-size:.72rem" onchange="changeUserRole(${u.id},this.value)">
+            <option value="patient" ${u.role==='patient'?'selected':''}>Patient</option>
+            <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+          </select>
+        </td>
+        <td><span class="status-pill ${u.is_active?'sp-active':'sp-inactive'}">${u.is_active?'Active':'Inactive'}</span></td>
+        <td>${u.date_joined}</td><td style="font-size:.72rem;color:var(--text3)">${u.last_login}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick="toggleUserActive(${u.id})">${u.is_active?'Deactivate':'Activate'}</button>
+          <button class="mini-btn danger" onclick="deleteUser(${u.id},'${u.username}')">Delete</button>
+        </td>
+      </tr>`).join('');
+  }catch(e){tbody.innerHTML=`<tr><td colspan="9" class="empty-note">${e.message}</td></tr>`;}
+}
+async function changeUserRole(id,role){
+  try{
+    const r=await apiFetch(`/api/admin/users/${id}/role/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role})});
+    toast(r.message);loadUsersFull();
+  }catch(e){toast(e.message,'error');loadUsersFull();}
+}
+async function toggleUserActive(id){
+  try{
+    const r=await apiFetch(`/api/admin/users/${id}/toggle-active/`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    toast(r.message);loadUsersFull();
+  }catch(e){toast(e.message,'error');}
+}
+async function deleteUser(id,username){
+  if(!confirm(`Permanently delete user "${username}"? This cannot be undone.`))return;
+  try{
+    const r=await apiFetch(`/api/admin/users/${id}/`,{method:'DELETE'});
+    toast(r.message);loadUsersFull();
+  }catch(e){toast(e.message,'error');}
+}
+
+/* ── DRUG DATABASE MANAGEMENT ── */
+async function loadDrugs(){
+  const q=document.getElementById('drug-search-q').value.trim();
+  const tbody=document.getElementById('drugs-tbody');
+  tbody.innerHTML=`<tr><td colspan="7" class="empty-note">Loading…</td></tr>`;
+  try{
+    const d=await apiFetch(`/api/admin/drugs/?q=${encodeURIComponent(q)}`);
+    document.getElementById('drugs-count-badge').textContent=`${d.total} total`;
+    if(!d.drugs.length){tbody.innerHTML=`<tr><td colspan="7" class="empty-note">No managed drugs yet — add one above.</td></tr>`;return;}
+    tbody.innerHTML=d.drugs.map(dr=>`
+      <tr>
+        <td><strong>${dr.name}</strong></td><td>${dr.generic_name||'—'}</td>
+        <td>${dr.condition?`<span class="cond-tag">${dr.condition}</span>`:'—'}</td>
+        <td style="font-size:.78rem">${dr.dosage||'—'}</td>
+        <td>${dr.prescription_required?'Rx':'OTC'}</td><td style="font-size:.72rem;color:var(--text3)">${dr.created_at}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick='editDrug(${dr.id})'>Edit</button>
+          <button class="mini-btn danger" onclick="deleteDrug(${dr.id},'${dr.name.replace(/'/g,"\\'")}')">Delete</button>
+        </td>
+      </tr>`).join('');
+    window._drugsCache=d.drugs;
+  }catch(e){tbody.innerHTML=`<tr><td colspan="7" class="empty-note">${e.message}</td></tr>`;}
+}
+function editDrug(id){
+  const dr=(window._drugsCache||[]).find(x=>x.id===id);
+  if(!dr)return;
+  document.getElementById('drug-edit-id').value=dr.id;
+  document.getElementById('drug-name').value=dr.name;
+  document.getElementById('drug-generic').value=dr.generic_name||'';
+  document.getElementById('drug-class').value=dr.drug_class||'';
+  document.getElementById('drug-condition').value=dr.condition||'';
+  document.getElementById('drug-brands').value=dr.brand_names||'';
+  document.getElementById('drug-dosage').value=dr.dosage||'';
+  document.getElementById('drug-price').value=dr.price_inr||'';
+  document.getElementById('drug-rx').checked=dr.prescription_required;
+  document.getElementById('drug-description').value=dr.description||'';
+  document.getElementById('drug-side-effects').value=dr.side_effects||'';
+  document.getElementById('drug-contraindications').value=dr.contraindications||'';
+  document.getElementById('drug-form-title').textContent='Edit Drug: '+dr.name;
+  document.getElementById('drug-save-btn').textContent='💾 Save Changes';
+  document.getElementById('drug-cancel-btn').style.display='inline-block';
+  document.getElementById('drug-form-card').scrollIntoView({behavior:'smooth'});
+}
+function resetDrugForm(){
+  document.getElementById('drug-edit-id').value='';
+  ['drug-name','drug-generic','drug-class','drug-condition','drug-brands','drug-dosage','drug-price','drug-description','drug-side-effects','drug-contraindications'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('drug-rx').checked=true;
+  document.getElementById('drug-form-title').textContent='Add a New Drug';
+  document.getElementById('drug-save-btn').textContent='➕ Add Drug';
+  document.getElementById('drug-cancel-btn').style.display='none';
+}
+async function saveDrug(){
+  const id=document.getElementById('drug-edit-id').value;
+  const payload={
+    name:document.getElementById('drug-name').value.trim(),
+    generic_name:document.getElementById('drug-generic').value.trim(),
+    drug_class:document.getElementById('drug-class').value.trim(),
+    condition:document.getElementById('drug-condition').value.trim(),
+    brand_names:document.getElementById('drug-brands').value.trim(),
+    dosage:document.getElementById('drug-dosage').value.trim(),
+    price_inr:document.getElementById('drug-price').value.trim(),
+    prescription_required:document.getElementById('drug-rx').checked,
+    description:document.getElementById('drug-description').value.trim(),
+    side_effects:document.getElementById('drug-side-effects').value.trim(),
+    contraindications:document.getElementById('drug-contraindications').value.trim(),
+  };
+  if(!payload.name){toast('Drug name is required','error');return;}
+  try{
+    if(id){
+      const r=await apiFetch(`/api/admin/drugs/${id}/`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      toast('Drug updated!');
+    }else{
+      const r=await apiFetch('/api/admin/drugs/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      toast('Drug added!');
+    }
+    resetDrugForm();loadDrugs();
+  }catch(e){toast(e.message,'error');}
+}
+async function deleteDrug(id,name){
+  if(!confirm(`Delete managed drug "${name}"?`))return;
+  try{
+    const r=await apiFetch(`/api/admin/drugs/${id}/`,{method:'DELETE'});
+    toast(r.message);loadDrugs();
+  }catch(e){toast(e.message,'error');}
+}
+
+/* ── PREDICTIONS ── */
+async function loadAllPredictions(){
+  const tbody=document.getElementById('all-preds-tbody');
+  try{
+    const d=await apiFetch('/api/predictions/');
+    const list=d.predictions||d.results||[];
+    tbody.innerHTML=list.length?list.map((p,i)=>`
+      <tr><td>${i+1}</td><td><span class="cond-tag">${p.condition||p.predicted_condition}</span></td><td style="font-size:.78rem">${(p.symptoms||'').slice(0,60)}</td><td style="font-size:.72rem;color:var(--text3)">${p.date||''}</td></tr>
+    `).join(''):`<tr><td colspan="4" class="empty-note">No predictions yet</td></tr>`;
+  }catch(e){tbody.innerHTML=`<tr><td colspan="4" class="empty-note">${e.message}</td></tr>`;}
+}
+
+/* ── AUDIT LOGS ── */
+async function loadAuditLogs(){
+  const q=document.getElementById('audit-search').value.trim();
+  const action=document.getElementById('audit-action-filter').value;
+  const tbody=document.getElementById('audit-tbody');
+  tbody.innerHTML=`<tr><td colspan="5" class="empty-note">Loading…</td></tr>`;
+  try{
+    const d=await apiFetch(`/api/admin/audit-logs/?q=${encodeURIComponent(q)}&action=${encodeURIComponent(action)}`);
+    document.getElementById('audit-count-badge').textContent=`${d.total} total events`;
+    const sel=document.getElementById('audit-action-filter');
+    if(sel.options.length<=1){
+      d.action_choices.forEach(c=>{const o=document.createElement('option');o.value=c.value;o.textContent=c.label;sel.appendChild(o);});
+    }
+    tbody.innerHTML=d.logs.length?d.logs.map(l=>`
+      <tr><td><span class="cond-tag">${l.action_display}</span></td><td>${l.username}</td><td style="font-size:.78rem">${l.detail||'—'}</td><td style="font-size:.72rem;color:var(--text3)">${l.ip_address||'—'}</td><td style="font-size:.72rem;color:var(--text3)">${l.created_at}</td></tr>
+    `).join(''):`<tr><td colspan="5" class="empty-note">No audit events found</td></tr>`;
+  }catch(e){tbody.innerHTML=`<tr><td colspan="5" class="empty-note">${e.message}</td></tr>`;}
+}
+
+/* ── SYSTEM SETTINGS ── */
+async function loadSettings(){
+  try{
+    const d=await apiFetch('/api/admin/settings/');
+    document.getElementById('set-site-name').value=d.site_name;
+    document.getElementById('set-support-email').value=d.support_email;
+    document.getElementById('set-allow-registration').checked=d.allow_registration;
+    document.getElementById('set-maintenance-mode').checked=d.maintenance_mode;
+    document.getElementById('settings-updated-note').textContent=`Last updated: ${d.updated_at}`;
+    document.getElementById('help-support-email') && (document.getElementById('help-support-email').textContent=d.support_email);
+  }catch(e){toast('Failed to load settings: '+e.message,'error');}
+}
+async function saveSettings(){
+  try{
+    const r=await apiFetch('/api/admin/settings/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      site_name:document.getElementById('set-site-name').value,
+      support_email:document.getElementById('set-support-email').value,
+      allow_registration:document.getElementById('set-allow-registration').checked,
+      maintenance_mode:document.getElementById('set-maintenance-mode').checked,
+    })});
+    toast(r.message);loadSettings();
+  }catch(e){toast(e.message,'error');}
+}
+
+/* ── ANALYTICS ── */
+let sentimentChart=null,conditionsChart=null;
+async function loadAnalytics(){
+  try{
+    const d=await apiFetch('/api/admin/analytics/');
+    document.getElementById('an-active').textContent=d.active_users;
+    document.getElementById('an-inactive').textContent=d.inactive_users;
+    document.getElementById('an-reviews').textContent=d.total_reviews;
+    document.getElementById('an-searches').textContent=d.total_searches;
+
+    const sctx=document.getElementById('chart-sentiment');
+    if(sentimentChart)sentimentChart.destroy();
+    sentimentChart=new Chart(sctx,{type:'doughnut',data:{
+      labels:d.sentiment_breakdown.map(s=>s.sentiment||'unknown'),
+      datasets:[{data:d.sentiment_breakdown.map(s=>s.count),backgroundColor:['#22D3A0','#FF4D6D','#FFB547','#7B2FFF']}]
+    },options:{plugins:{legend:{position:'bottom',labels:{color:getComputedStyle(document.documentElement).getPropertyValue('--text2')}}}}});
+
+    const cctx=document.getElementById('chart-conditions');
+    if(conditionsChart)conditionsChart.destroy();
+    conditionsChart=new Chart(cctx,{type:'bar',data:{
+      labels:d.top_conditions.map(c=>c.predicted_condition),
+      datasets:[{label:'Predictions',data:d.top_conditions.map(c=>c.count),backgroundColor:'#0DFFD4'}]
+    },options:{plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:getComputedStyle(document.documentElement).getPropertyValue('--text3')},grid:{display:false}},
+      y:{ticks:{color:getComputedStyle(document.documentElement).getPropertyValue('--text3')},grid:{color:'rgba(255,255,255,.05)'}}}}});
+
+    document.getElementById('rating-by-condition-tbody').innerHTML=d.avg_rating_by_condition.length
+      ? d.avg_rating_by_condition.map(c=>`<tr><td><span class="cond-tag">${c.condition||'Unknown'}</span></td><td>⭐ ${(c.avg_rating||0).toFixed(2)}</td><td>${c.count}</td></tr>`).join('')
+      : `<tr><td colspan="3" class="empty-note">No review data yet</td></tr>`;
+  }catch(e){toast('Failed to load analytics: '+e.message,'error');}
+}
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded',()=>{loadOverview();});
+</script>
+<!-- PWA bootstrap: service worker registration + install prompt banner -->
+<script src="{% static 'js/pwa-register.js' %}"></script>
+</body>
+</html>

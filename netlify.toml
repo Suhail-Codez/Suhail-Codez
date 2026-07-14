@@ -1,0 +1,27 @@
+# Netlify config for the IDPDR Django app.
+# NOTE: Netlify is built for static sites + lightweight functions; it is
+# not the natural home for a stateful Django app with on-disk ML models.
+# This works, but Render or Railway (native long-running Python services)
+# is the better fit for this project -- see DEPLOYMENT_GUIDE.md.
+
+[build]
+  base = "backend"
+  command = "pip install -r requirements.txt -r ../netlify/requirements-netlify.txt && python manage.py collectstatic --noinput"
+  publish = "staticfiles"
+  functions = "../netlify/functions"
+
+[functions]
+  python_version = "3.11"
+  # Cold starts reload scikit-learn models from the models_pkl/ pickle
+  # files on every new function instance -- expect a slower first request.
+  included_files = ["../models_pkl/**", "backend/db.sqlite3"]
+
+[[redirects]]
+  from = "/static/*"
+  to = "/static/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/app"
+  status = 200

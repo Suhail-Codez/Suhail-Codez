@@ -1,0 +1,490 @@
+{
+  "Anxiety": [
+    {
+      "drugName": "Lorazepam",
+      "avg_rating": 7.347517730496454,
+      "avg_sentiment": 4.063659574468085,
+      "weighted_score": 6.362360283687942,
+      "final_score": 6.850267706229548,
+      "review_count": 141
+    },
+    {
+      "drugName": "Alprazolam",
+      "avg_rating": 7.181818181818182,
+      "avg_sentiment": 4.100576923076923,
+      "weighted_score": 6.257445804195804,
+      "final_score": 6.7204367728313805,
+      "review_count": 143
+    },
+    {
+      "drugName": "Buspirone",
+      "avg_rating": 7.006451612903226,
+      "avg_sentiment": 3.7843580645161294,
+      "weighted_score": 6.039823548387097,
+      "final_score": 6.5291979694797435,
+      "review_count": 155
+    },
+    {
+      "drugName": "Escitalopram",
+      "avg_rating": 6.7555555555555555,
+      "avg_sentiment": 4.138618518518518,
+      "weighted_score": 5.970474444444444,
+      "final_score": 6.378562892720307,
+      "review_count": 135
+    },
+    {
+      "drugName": "Clonazepam",
+      "avg_rating": 6.847222222222222,
+      "avg_sentiment": 3.624472222222222,
+      "weighted_score": 5.880397222222222,
+      "final_score": 6.375472781385282,
+      "review_count": 144
+    }
+  ],
+  "Asthma": [
+    {
+      "drugName": "Montelukast",
+      "avg_rating": 7.342465753424658,
+      "avg_sentiment": 6.669383561643836,
+      "weighted_score": 7.140541095890411,
+      "final_score": 7.237143767318425,
+      "review_count": 146
+    },
+    {
+      "drugName": "Salmeterol",
+      "avg_rating": 7.3515625,
+      "avg_sentiment": 6.61830859375,
+      "weighted_score": 7.131586328125,
+      "final_score": 7.236316513498893,
+      "review_count": 128
+    },
+    {
+      "drugName": "Fluticasone",
+      "avg_rating": 7.208092485549133,
+      "avg_sentiment": 6.619780346820809,
+      "weighted_score": 7.031598843930635,
+      "final_score": 7.119800636294401,
+      "review_count": 173
+    },
+    {
+      "drugName": "Budesonide",
+      "avg_rating": 7.13375796178344,
+      "avg_sentiment": 6.240449044585987,
+      "weighted_score": 6.865765286624204,
+      "final_score": 7.00193786619966,
+      "review_count": 157
+    },
+    {
+      "drugName": "Albuterol",
+      "avg_rating": 6.96,
+      "avg_sentiment": 6.160393333333333,
+      "weighted_score": 6.720118,
+      "final_score": 6.847760388888889,
+      "review_count": 150
+    }
+  ],
+  "Depression": [
+    {
+      "drugName": "Venlafaxine",
+      "avg_rating": 7.409395973154362,
+      "avg_sentiment": 5.806718120805369,
+      "weighted_score": 6.928592617449665,
+      "final_score": 7.162612171757677,
+      "review_count": 149
+    },
+    {
+      "drugName": "Escitalopram",
+      "avg_rating": 7.323529411764706,
+      "avg_sentiment": 5.792121323529411,
+      "weighted_score": 6.864106985294118,
+      "final_score": 7.089808439374608,
+      "review_count": 136
+    },
+    {
+      "drugName": "Fluoxetine",
+      "avg_rating": 7.305555555555555,
+      "avg_sentiment": 5.617989583333333,
+      "weighted_score": 6.799285763888888,
+      "final_score": 7.049202766504329,
+      "review_count": 144
+    },
+    {
+      "drugName": "Sertraline",
+      "avg_rating": 7.063694267515924,
+      "avg_sentiment": 5.468073248407643,
+      "weighted_score": 6.58500796178344,
+      "final_score": 6.828625072042751,
+      "review_count": 157
+    },
+    {
+      "drugName": "Bupropion",
+      "avg_rating": 6.961538461538462,
+      "avg_sentiment": 5.585842948717948,
+      "weighted_score": 6.548829807692307,
+      "final_score": 6.762560820847492,
+      "review_count": 156
+    }
+  ],
+  "Diabetes Type 2": [
+    {
+      "drugName": "Ozempic",
+      "avg_rating": 7.4787878787878785,
+      "avg_sentiment": 7.628351515151515,
+      "weighted_score": 7.523656969696969,
+      "final_score": 7.493441183261183,
+      "review_count": 165
+    },
+    {
+      "drugName": "Metformin",
+      "avg_rating": 7.388489208633094,
+      "avg_sentiment": 7.3622014388489205,
+      "weighted_score": 7.380602877697842,
+      "final_score": 7.378437158461151,
+      "review_count": 139
+    },
+    {
+      "drugName": "Glipizide",
+      "avg_rating": 7.314814814814815,
+      "avg_sentiment": 7.373435185185185,
+      "weighted_score": 7.332400925925925,
+      "final_score": 7.320457568906114,
+      "review_count": 162
+    },
+    {
+      "drugName": "Januvia",
+      "avg_rating": 7.292207792207792,
+      "avg_sentiment": 7.107996753246753,
+      "weighted_score": 7.2369444805194805,
+      "final_score": 7.261961400151339,
+      "review_count": 154
+    },
+    {
+      "drugName": "Jardiance",
+      "avg_rating": 7.248322147651007,
+      "avg_sentiment": 7.273352348993288,
+      "weighted_score": 7.25583120805369,
+      "final_score": 7.250759768946482,
+      "review_count": 149
+    }
+  ],
+  "GERD": [
+    {
+      "drugName": "Omeprazole",
+      "avg_rating": 7.452830188679245,
+      "avg_sentiment": 7.851955974842768,
+      "weighted_score": 7.572567924528301,
+      "final_score": 7.5054095375435725,
+      "review_count": 159
+    },
+    {
+      "drugName": "Ranitidine",
+      "avg_rating": 7.314102564102564,
+      "avg_sentiment": 7.818794871794871,
+      "weighted_score": 7.465510256410257,
+      "final_score": 7.386563695808876,
+      "review_count": 156
+    },
+    {
+      "drugName": "Esomeprazole",
+      "avg_rating": 7.292307692307692,
+      "avg_sentiment": 7.640734615384615,
+      "weighted_score": 7.396835769230768,
+      "final_score": 7.341505186202686,
+      "review_count": 130
+    },
+    {
+      "drugName": "Lansoprazole",
+      "avg_rating": 7.052631578947368,
+      "avg_sentiment": 7.325049707602339,
+      "weighted_score": 7.134357017543859,
+      "final_score": 7.097743272430616,
+      "review_count": 171
+    },
+    {
+      "drugName": "Pantoprazole",
+      "avg_rating": 6.980769230769231,
+      "avg_sentiment": 7.468541666666667,
+      "weighted_score": 7.127100961538461,
+      "final_score": 7.060732542348882,
+      "review_count": 156
+    }
+  ],
+  "High Cholesterol": [
+    {
+      "drugName": "Rosuvastatin",
+      "avg_rating": 7.423312883435583,
+      "avg_sentiment": 7.765843558282208,
+      "weighted_score": 7.52607208588957,
+      "final_score": 7.468424610703295,
+      "review_count": 163
+    },
+    {
+      "drugName": "Atorvastatin",
+      "avg_rating": 7.445859872611465,
+      "avg_sentiment": 7.613952229299363,
+      "weighted_score": 7.496287579617834,
+      "final_score": 7.463905599522823,
+      "review_count": 157
+    },
+    {
+      "drugName": "Pravastatin",
+      "avg_rating": 7.237804878048781,
+      "avg_sentiment": 7.506189024390243,
+      "weighted_score": 7.318320121951219,
+      "final_score": 7.2771613381148175,
+      "review_count": 164
+    },
+    {
+      "drugName": "Ezetimibe",
+      "avg_rating": 7.090225563909774,
+      "avg_sentiment": 7.17053007518797,
+      "weighted_score": 7.114316917293232,
+      "final_score": 7.106334837822995,
+      "review_count": 133
+    },
+    {
+      "drugName": "Simvastatin",
+      "avg_rating": 7.0503597122302155,
+      "avg_sentiment": 7.270446043165467,
+      "weighted_score": 7.1163856115107915,
+      "final_score": 7.088610404562257,
+      "review_count": 139
+    }
+  ],
+  "Hypertension": [
+    {
+      "drugName": "Losartan",
+      "avg_rating": 7.413793103448276,
+      "avg_sentiment": 7.277455172413793,
+      "weighted_score": 7.37289172413793,
+      "final_score": 7.386653747373625,
+      "review_count": 145
+    },
+    {
+      "drugName": "Lisinopril",
+      "avg_rating": 7.403846153846154,
+      "avg_sentiment": 7.216483974358975,
+      "weighted_score": 7.3476375,
+      "final_score": 7.369795992302544,
+      "review_count": 156
+    },
+    {
+      "drugName": "Amlodipine",
+      "avg_rating": 7.359154929577465,
+      "avg_sentiment": 7.305852112676057,
+      "weighted_score": 7.343164084507042,
+      "final_score": 7.346136135820773,
+      "review_count": 142
+    },
+    {
+      "drugName": "Metoprolol",
+      "avg_rating": 7.156626506024097,
+      "avg_sentiment": 6.816975903614457,
+      "weighted_score": 7.054731325301204,
+      "final_score": 7.1070941980041376,
+      "review_count": 166
+    },
+    {
+      "drugName": "Hydrochlorothiazide",
+      "avg_rating": 6.99290780141844,
+      "avg_sentiment": 7.132450354609929,
+      "weighted_score": 7.034770567375887,
+      "final_score": 7.020909934166236,
+      "review_count": 141
+    }
+  ],
+  "Hypothyroidism": [
+    {
+      "drugName": "Armour Thyroid",
+      "avg_rating": 7.254752851711027,
+      "avg_sentiment": 7.666216730038022,
+      "weighted_score": 7.378192015209125,
+      "final_score": 7.315587664096219,
+      "review_count": 263
+    },
+    {
+      "drugName": "Levothyroxine",
+      "avg_rating": 7.177165354330708,
+      "avg_sentiment": 7.595897637795275,
+      "weighted_score": 7.302785039370078,
+      "final_score": 7.2405297250722445,
+      "review_count": 254
+    },
+    {
+      "drugName": "Liothyronine",
+      "avg_rating": 7.022471910112359,
+      "avg_sentiment": 7.45562734082397,
+      "weighted_score": 7.152418539325843,
+      "final_score": 7.090766028587911,
+      "review_count": 267
+    }
+  ],
+  "Infection": [
+    {
+      "drugName": "Ciprofloxacin",
+      "avg_rating": 7.448863636363637,
+      "avg_sentiment": 7.074707386363636,
+      "weighted_score": 7.3366167613636355,
+      "final_score": 7.386223553919572,
+      "review_count": 176
+    },
+    {
+      "drugName": "Amoxicillin",
+      "avg_rating": 7.265734265734266,
+      "avg_sentiment": 6.754395104895105,
+      "weighted_score": 7.112332517482518,
+      "final_score": 7.187095815749247,
+      "review_count": 143
+    },
+    {
+      "drugName": "Cephalexin",
+      "avg_rating": 7.190789473684211,
+      "avg_sentiment": 6.62616447368421,
+      "weighted_score": 7.02140197368421,
+      "final_score": 7.106578901794094,
+      "review_count": 152
+    },
+    {
+      "drugName": "Doxycycline",
+      "avg_rating": 7.095238095238095,
+      "avg_sentiment": 6.648350340136054,
+      "weighted_score": 6.961171768707483,
+      "final_score": 7.031746535450698,
+      "review_count": 147
+    },
+    {
+      "drugName": "Azithromycin",
+      "avg_rating": 6.888198757763975,
+      "avg_sentiment": 6.467378881987578,
+      "weighted_score": 6.761952795031055,
+      "final_score": 6.834381205832617,
+      "review_count": 161
+    }
+  ],
+  "Insomnia": [
+    {
+      "drugName": "Eszopiclone",
+      "avg_rating": 7.317880794701987,
+      "avg_sentiment": 6.857781456953641,
+      "weighted_score": 7.1798509933774834,
+      "final_score": 7.245405137820557,
+      "review_count": 151
+    },
+    {
+      "drugName": "Trazodone",
+      "avg_rating": 7.2368421052631575,
+      "avg_sentiment": 6.49410197368421,
+      "weighted_score": 7.014020065789474,
+      "final_score": 7.124492886118331,
+      "review_count": 152
+    },
+    {
+      "drugName": "Melatonin",
+      "avg_rating": 7.254901960784314,
+      "avg_sentiment": 6.369696078431373,
+      "weighted_score": 6.989340196078431,
+      "final_score": 7.120634651549782,
+      "review_count": 153
+    },
+    {
+      "drugName": "Doxepin",
+      "avg_rating": 7.166666666666667,
+      "avg_sentiment": 6.4312033333333325,
+      "weighted_score": 6.946027666666666,
+      "final_score": 7.057590222222222,
+      "review_count": 150
+    },
+    {
+      "drugName": "Zolpidem",
+      "avg_rating": 6.927536231884058,
+      "avg_sentiment": 6.104746376811594,
+      "weighted_score": 6.6806992753623184,
+      "final_score": 6.81354032837185,
+      "review_count": 138
+    }
+  ],
+  "Migraine": [
+    {
+      "drugName": "Propranolol",
+      "avg_rating": 7.460869565217391,
+      "avg_sentiment": 6.81871304347826,
+      "weighted_score": 7.268222608695652,
+      "final_score": 7.354369082125604,
+      "review_count": 115
+    },
+    {
+      "drugName": "Topiramate",
+      "avg_rating": 7.415492957746479,
+      "avg_sentiment": 6.807341549295774,
+      "weighted_score": 7.233047535211268,
+      "final_score": 7.31739365064657,
+      "review_count": 142
+    },
+    {
+      "drugName": "Amitriptyline",
+      "avg_rating": 7.426573426573427,
+      "avg_sentiment": 6.6316118881118875,
+      "weighted_score": 7.188084965034966,
+      "final_score": 7.300135438218282,
+      "review_count": 143
+    },
+    {
+      "drugName": "Rizatriptan",
+      "avg_rating": 7.157575757575757,
+      "avg_sentiment": 6.231272727272726,
+      "weighted_score": 6.879684848484848,
+      "final_score": 7.020026551226551,
+      "review_count": 165
+    },
+    {
+      "drugName": "Sumatriptan",
+      "avg_rating": 6.8881578947368425,
+      "avg_sentiment": 6.058736842105263,
+      "weighted_score": 6.639331578947368,
+      "final_score": 6.773568395783697,
+      "review_count": 152
+    }
+  ],
+  "Pain": [
+    {
+      "drugName": "Tramadol",
+      "avg_rating": 7.412162162162162,
+      "avg_sentiment": 6.387942567567568,
+      "weighted_score": 7.104896283783784,
+      "final_score": 7.252019168614817,
+      "review_count": 148
+    },
+    {
+      "drugName": "Ibuprofen",
+      "avg_rating": 7.333333333333333,
+      "avg_sentiment": 6.517229166666667,
+      "weighted_score": 7.088502083333333,
+      "final_score": 7.206797939213564,
+      "review_count": 144
+    },
+    {
+      "drugName": "Celecoxib",
+      "avg_rating": 7.190789473684211,
+      "avg_sentiment": 6.142802631578948,
+      "weighted_score": 6.876393421052632,
+      "final_score": 7.034074625478305,
+      "review_count": 152
+    },
+    {
+      "drugName": "Acetaminophen",
+      "avg_rating": 7.120300751879699,
+      "avg_sentiment": 5.95703007518797,
+      "weighted_score": 6.771319548872181,
+      "final_score": 6.948822167598483,
+      "review_count": 133
+    },
+    {
+      "drugName": "Naproxen",
+      "avg_rating": 6.833333333333333,
+      "avg_sentiment": 5.653471014492754,
+      "weighted_score": 6.479374637681159,
+      "final_score": 6.6689590906123515,
+      "review_count": 138
+    }
+  ]
+}

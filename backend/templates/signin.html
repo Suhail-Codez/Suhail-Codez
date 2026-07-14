@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Sign In — Intelligent Disease & Drug Recommendation System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="{% static 'manifest.json' %}"/>
+<meta name="theme-color" content="#00C2FF"/>
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}"/>
+<link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="IDPDR"/>
+<style>
+:root{--bg:#0A0F1E;--surface:#111827;--surface2:#1a2235;--border:rgba(255,255,255,0.08);
+  --primary:#00C2FF;--primary-dim:rgba(0,194,255,0.12);--success:#10DFAA;
+  --danger:#FF4D6D;--danger-dim:rgba(255,77,109,0.12);
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#475569;--radius:16px;--radius-sm:10px;}
+[data-theme="light"]{--bg:#EEF2FF;--surface:#fff;--surface2:#F4F7FF;
+  --border:rgba(0,0,0,0.07);--text:#0F172A;--text2:#475569;--text3:#94A3B8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:40px 36px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.4);}
+.logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:32px;}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#00C2FF,#8B5CF6);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 4px 16px rgba(0,194,255,0.35);}
+.logo-text{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;}
+.logo-text span{color:var(--primary);}
+h2{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:6px;text-align:center;}
+.sub{color:var(--text2);font-size:.88rem;margin-bottom:28px;text-align:center;}
+.form-group{margin-bottom:18px;}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:7px;}
+input{width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  border-radius:var(--radius-sm);padding:12px 14px;font-size:.92rem;font-family:'Inter',sans-serif;
+  transition:all .2s;outline:none;}
+input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim);}
+.btn{width:100%;padding:13px;background:var(--primary);color:#000;border:none;
+  border-radius:var(--radius-sm);font-size:.95rem;font-weight:700;cursor:pointer;
+  transition:all .2s;margin-top:6px;letter-spacing:.01em;}
+.btn:hover:not(:disabled){background:#00d9ff;transform:translateY(-1px);
+  box-shadow:0 8px 24px rgba(0,194,255,0.4);}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
+.alert{padding:12px 14px;border-radius:var(--radius-sm);font-size:.84rem;
+  margin-bottom:16px;display:none;align-items:center;gap:8px;}
+.alert.show{display:flex;}
+.alert-error{background:var(--danger-dim);border:1px solid rgba(255,77,109,.3);color:var(--danger);}
+.alert-success{background:rgba(16,223,170,.1);border:1px solid rgba(16,223,170,.35);color:var(--success);}
+.footer{text-align:center;margin-top:20px;font-size:.84rem;color:var(--text3);}
+.footer a{color:var(--primary);text-decoration:none;font-weight:600;}
+.footer a:hover{text-decoration:underline;}
+.hint-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 14px;margin-top:16px;font-size:.78rem;color:var(--text3);text-align:center;}
+.hint-box strong{color:var(--text2);}
+.theme-btn{position:fixed;top:14px;right:14px;background:var(--surface);
+  border:1px solid var(--border);color:var(--text2);padding:6px 12px;
+  border-radius:20px;cursor:pointer;font-size:.74rem;transition:all .2s;}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.2);
+  border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}"/>
+</head>
+<body>
+<button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">💊</div>
+    <div class="logo-text">IDP<span>DR</span></div>
+  </div>
+  <h2>Welcome back</h2>
+  <p class="sub">Sign in to your medical intelligence account</p>
+  <div id="alert" class="alert"></div>
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input id="username" type="text" placeholder="Enter your username" autocomplete="username"/>
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="Enter your password"
+      autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div style="text-align:right;margin-top:6px"><a href="/forgot-password/" style="color:var(--primary);font-size:.78rem;text-decoration:none;font-weight:600">Forgot password?</a></div>
+  </div>
+  <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <input type="checkbox" id="remember-me" style="width:auto;margin:0;"/>
+    <label for="remember-me" style="margin:0;font-weight:500;cursor:pointer;">Remember me on this device</label>
+  </div>
+  <button class="btn" id="login-btn" onclick="doLogin()">Sign In</button>
+  <div class="hint-box">
+    Default credentials: <strong>admin</strong> / <strong>admin123</strong><br/>
+    <span style="font-size:.72rem;margin-top:3px;display:block">Run <code>python manage.py seed_admin</code> if login fails</span>
+  </div>
+  <div class="footer" style="margin-top:16px">
+    Don't have an account? <a href="/register/">Create one</a>
+  </div>
+</div>
+<script>
+// ── Theme ──
+function toggleTheme(){
+  var d=document.documentElement,t=d.getAttribute('data-theme')==='dark'?'light':'dark';
+  d.setAttribute('data-theme',t);localStorage.setItem('mr-theme',t);
+}
+(function(){var s=localStorage.getItem('mr-theme');if(s)document.documentElement.setAttribute('data-theme',s);})();
+
+// ── CSRF ──
+function getCookie(name){
+  var v=null;
+  document.cookie.split(';').forEach(function(c){
+    var parts=c.trim().split('=');
+    if(parts[0]===name) v=decodeURIComponent(parts[1]||'');
+  });
+  return v;
+}
+
+// ── Alert helper ──
+function showAlert(type,msg){
+  var el=document.getElementById('alert');
+  el.className='alert alert-'+type+' show';
+  el.innerHTML=(type==='error'?'❌ ':'✅ ')+msg;
+}
+function clearAlert(){
+  var el=document.getElementById('alert');
+  el.className='alert';el.innerHTML='';
+}
+
+// ── Login ──
+async function doLogin(){
+  clearAlert();
+  var u=document.getElementById('username').value.trim();
+  var p=document.getElementById('password').value;
+  if(!u||!p){showAlert('error','Please enter both username and password.');return;}
+
+  var btn=document.getElementById('login-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Signing in...';
+
+  try{
+    // Step 1: Ensure CSRF cookie is set
+    await fetch('/api/health/',{credentials:'include'}).catch(function(){});
+
+    // Step 2: Attempt login
+    var csrfToken=getCookie('csrftoken')||'';
+    var remember=document.getElementById('remember-me').checked;
+    var resp=await fetch('/api/auth/login/',{
+      method:'POST',
+      credentials:'include',
+      headers:{
+        'Content-Type':'application/json',
+        'X-CSRFToken':csrfToken
+      },
+      body:JSON.stringify({username:u,password:p,remember:remember})
+    });
+
+    var data=await resp.json();
+
+    if(!resp.ok){
+      showAlert('error',data.error||'Login failed. Please check your credentials.');
+      return;
+    }
+
+    showAlert('success',data.message||'Login successful! Redirecting...');
+    // Prefer an explicit ?next= (e.g. bounced here from a protected page),
+    // otherwise use the role-based destination the API returned (Patients
+    // -> Patient Dashboard '/', Admins -> '/admin-dashboard/').
+    var params=new URLSearchParams(window.location.search);
+    var next=params.get('next');
+    var dest=(next && next.startsWith('/')) ? next : (data.redirect || '/');
+    setTimeout(function(){
+      window.location.href=dest;
+    },600);
+
+  }catch(err){
+    showAlert('error','Connection error. Make sure the server is running.');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='Sign In';
+  }
+}
+</script>
+<script src="{% static 'js/pwa-register.js' %}"></script>
+</body>
+</html>

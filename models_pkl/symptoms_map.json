@@ -1,0 +1,97 @@
+{
+  "Diabetes Type 2": [
+    "frequent urination",
+    "increased thirst",
+    "fatigue",
+    "blurred vision",
+    "slow healing wounds",
+    "unexplained weight loss"
+  ],
+  "Hypertension": [
+    "headache",
+    "dizziness",
+    "chest pain",
+    "shortness of breath",
+    "nosebleed",
+    "vision changes"
+  ],
+  "Depression": [
+    "persistent sadness",
+    "loss of interest",
+    "fatigue",
+    "sleep problems",
+    "difficulty concentrating",
+    "hopelessness"
+  ],
+  "Anxiety": [
+    "excessive worry",
+    "restlessness",
+    "rapid heartbeat",
+    "sweating",
+    "trembling",
+    "difficulty breathing"
+  ],
+  "Asthma": [
+    "wheezing",
+    "coughing",
+    "chest tightness",
+    "shortness of breath",
+    "difficulty breathing",
+    "night cough"
+  ],
+  "Migraine": [
+    "severe headache",
+    "nausea",
+    "light sensitivity",
+    "sound sensitivity",
+    "visual disturbances",
+    "throbbing pain"
+  ],
+  "GERD": [
+    "heartburn",
+    "chest pain",
+    "regurgitation",
+    "difficulty swallowing",
+    "sour taste",
+    "chronic cough"
+  ],
+  "Hypothyroidism": [
+    "fatigue",
+    "weight gain",
+    "cold sensitivity",
+    "constipation",
+    "dry skin",
+    "hair loss"
+  ],
+  "Insomnia": [
+    "trouble falling asleep",
+    "waking during night",
+    "fatigue",
+    "irritability",
+    "difficulty concentrating",
+    "daytime sleepiness"
+  ],
+  "Pain": [
+    "localized pain",
+    "swelling",
+    "tenderness",
+    "inflammation",
+    "limited mobility",
+    "joint stiffness"
+  ],
+  "Infection": [
+    "fever",
+    "chills",
+    "fatigue",
+    "body aches",
+    "redness and swelling",
+    "pus or discharge"
+  ],
+  "High Cholesterol": [
+    "chest pain",
+    "fatigue",
+    "yellowish skin patches",
+    "shortness of breath",
+    "numbness in limbs"
+  ]
+}

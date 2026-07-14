@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>An Intelligent Disease Prediction and Drug Recommendation Prototype — Using Multiple Approaches of Machine Learning Algorithms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- PWA: manifest + icons + theme color (added for mobile/installable support) -->
+<link rel="manifest" href="{% static 'manifest.json' %}"/>
+<meta name="theme-color" content="#00C2FF"/>
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}"/>
+<link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="IDPDR"/>
+<style>
+:root {
+  --bg:#0A0F1E;--bg2:#0D1426;--surface:#111827;--surface2:#1a2235;--surface3:#1f2a3e;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --primary:#00C2FF;--primary-dim:rgba(0,194,255,0.1);--primary-glow:0 0 30px rgba(0,194,255,0.2);
+  --success:#10DFAA;--success-dim:rgba(16,223,170,0.1);
+  --warning:#FFB020;--warning-dim:rgba(255,176,32,0.1);
+  --danger:#FF4D6D;--danger-dim:rgba(255,77,109,0.1);
+  --purple:#8B5CF6;--purple-dim:rgba(139,92,246,0.1);
+  --orange:#F97316;--orange-dim:rgba(249,115,22,0.1);
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#475569;
+  --radius:14px;--radius-sm:8px;--sidebar-w:256px;--topbar-h:64px;
+  --shadow-card:0 4px 24px rgba(0,0,0,0.3);--transition:0.2s ease;
+}
+[data-theme="light"]{
+  --bg:#F0F4FF;--bg2:#E8EDFC;--surface:#FFFFFF;--surface2:#F8FAFF;--surface3:#EEF2FF;
+  --border:rgba(0,0,0,0.06);--border2:rgba(0,0,0,0.1);
+  --text:#0F172A;--text2:#475569;--text3:#94A3B8;--shadow-card:0 4px 24px rgba(0,0,0,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden;transition:background var(--transition),color var(--transition)}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:transform var(--transition)}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-wrap{display:flex;align-items:center;gap:11px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--primary),var(--purple));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;box-shadow:0 4px 14px rgba(0,194,255,0.3)}
+.logo-name{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;line-height:1.15}
+.logo-name span{color:var(--primary)}
+.logo-sub{font-size:.65rem;color:var(--text3);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
+.nav-label{font-size:.68rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:10px 8px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:.875rem;font-weight:500;transition:all var(--transition);margin-bottom:2px}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--primary-dim);color:var(--primary);border-left:3px solid var(--primary)}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--primary);color:#000;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px}
+.nav-badge.orange{background:var(--orange);color:#fff}
+.nav-badge.new{background:var(--success);color:#000}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.user-avatar{width:34px;height:34px;background:linear-gradient(135deg,var(--purple),var(--primary));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.user-name{font-size:.83rem;font-weight:600;line-height:1.2}
+.user-role{font-size:.7rem;color:var(--text3)}
+
+/* ── Profile Dropdown Menu ───────────────────────────────────── */
+.profile-menu{position:relative}
+.profile-trigger{width:100%;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:0;font-family:inherit;color:inherit;text-align:left;border-radius:var(--radius-sm);transition:background var(--transition)}
+.profile-trigger:hover{background:var(--surface2)}
+.profile-trigger .pm-chevron{margin-left:auto;color:var(--text3);transition:transform .25s ease;flex-shrink:0}
+.profile-trigger.menu-open .pm-chevron{transform:rotate(180deg)}
+.profile-dropdown{
+  position:absolute;left:8px;right:8px;bottom:calc(100% + 8px);
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);
+  box-shadow:0 16px 48px rgba(0,0,0,0.35);padding:8px;z-index:500;
+  opacity:0;visibility:hidden;transform:translateY(8px) scale(.98);transform-origin:bottom left;
+  transition:opacity .18s ease,transform .18s ease,visibility .18s;
+  max-height:min(70vh,560px);overflow-y:auto;
+}
+.profile-dropdown.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.pd-header{display:flex;align-items:center;gap:11px;padding:12px 10px 14px}
+.pd-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0}
+.pd-name{font-size:.9rem;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.pd-role-badge{display:inline-flex;align-items:center;gap:4px;font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:3px;letter-spacing:.03em;text-transform:uppercase}
+.pd-role-badge.role-admin{background:var(--purple-dim);color:var(--purple)}
+.pd-role-badge.role-patient{background:var(--primary-dim);color:var(--primary)}
+.pd-divider{height:1px;background:var(--border);margin:6px 4px}
+.pd-item{display:flex;align-items:center;gap:11px;width:100%;padding:9px 10px;background:none;border:none;border-radius:var(--radius-sm);color:var(--text2);font-size:.83rem;font-weight:500;cursor:pointer;transition:all .15s ease;text-align:left;font-family:inherit}
+.pd-item:hover{background:var(--surface2);color:var(--text)}
+.pd-item svg{flex-shrink:0;opacity:.85}
+.pd-item .pd-arrow{margin-left:auto;color:var(--text3);transition:transform .2s ease}
+.pd-item.pd-danger{color:var(--danger)}
+.pd-item.pd-danger:hover{background:var(--danger-dim)}
+.pd-submenu{max-height:0;overflow:hidden;transition:max-height .22s ease}
+.pd-submenu.open{max-height:180px}
+.pd-submenu.open ~ .pd-arrow,.pd-item.submenu-open .pd-arrow{transform:rotate(90deg)}
+.pd-theme-opt{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px 8px 34px;background:none;border:none;border-radius:var(--radius-sm);color:var(--text2);font-size:.8rem;font-weight:500;cursor:pointer;text-align:left;font-family:inherit;transition:all .15s ease}
+.pd-theme-opt:hover{background:var(--surface2);color:var(--text)}
+.pd-theme-opt.active{color:var(--primary);font-weight:700}
+.pd-theme-opt.active svg{color:var(--primary)}
+.pd-notif-dot{width:7px;height:7px;border-radius:50%;background:var(--danger);margin-left:auto;flex-shrink:0}
+* {transition:background-color .25s ease,border-color .25s ease}
+
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;z-index:100;transition:left var(--transition)}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text2);font-size:1.3rem}
+.topbar-title{font-size:1rem;font-weight:600;color:var(--text2);font-family:'Syne',sans-serif}
+.topbar-title span{color:var(--primary)}
+.breadcrumb{font-size:.8rem;color:var(--text3)}
+.breadcrumb span{color:var(--text2)}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:all var(--transition);text-decoration:none}
+.icon-btn:hover{background:var(--primary-dim);border-color:var(--primary);color:var(--primary)}
+.theme-badge{font-size:.7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:20px;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.theme-badge:hover{border-color:var(--primary);color:var(--primary)}
+.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);padding:28px;min-height:calc(100vh - var(--topbar-h))}
+.page{display:none;animation:fadeUp .3s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.page-header{margin-bottom:24px}
+.page-header h1{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;line-height:1.2;margin-bottom:6px}
+.page-header h1 em{color:var(--primary);font-style:normal}
+.page-header p{color:var(--text2);font-size:.9rem;line-height:1.6;max-width:640px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-card);transition:box-shadow var(--transition),border-color var(--transition)}
+.card:hover{box-shadow:var(--shadow-card),var(--primary-glow)}
+.card-title{font-size:.8rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.card-value{font-size:1.9rem;font-weight:700;font-family:'Syne',sans-serif;color:var(--text);line-height:1}
+.card-sub{font-size:.78rem;color:var(--text3);margin-top:5px}
+.card-icon{width:42px;height:42px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius-sm);font-size:.87rem;font-weight:600;cursor:pointer;border:none;transition:all var(--transition)}
+.btn-primary{background:var(--primary);color:#000}
+.btn-primary:hover{background:#00d9ff;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,194,255,0.35)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#000}
+.btn-sm{padding:7px 13px;font-size:.8rem}
+.btn-lg{padding:13px 24px;font-size:.95rem}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:7px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:10px 14px;font-size:.9rem;font-family:'Inter',sans-serif;transition:border-color var(--transition)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim)}
+.form-textarea{resize:vertical;min-height:80px}
+.input-hint{font-size:.75rem;color:var(--text3);margin-top:5px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600}
+.profile-tab{background:none;border:none;color:var(--text2);font-size:.85rem;font-weight:600;padding:9px 4px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit;transition:all var(--transition)}
+.profile-tab:hover{color:var(--text)}
+.profile-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.faq-item{padding:12px 0;border-bottom:1px solid var(--border)}
+.faq-item:last-child{border-bottom:none}
+.faq-item strong{display:block;font-size:.88rem;margin-bottom:5px}
+.faq-item p{font-size:.82rem;color:var(--text2);line-height:1.6}
+.badge-primary{background:var(--primary-dim);color:var(--primary)}
+.badge-success{background:var(--success-dim);color:var(--success)}
+.badge-warning{background:var(--warning-dim);color:var(--warning)}
+.badge-danger{background:var(--danger-dim);color:var(--danger)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}
+.progress-wrap{background:var(--surface2);border-radius:20px;height:8px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;border-radius:20px;transition:width .8s ease}
+.progress-bar.primary{background:linear-gradient(90deg,var(--primary),var(--purple))}
+.progress-bar.success{background:var(--success)}
+.progress-bar.warning{background:var(--warning)}
+.progress-bar.danger{background:var(--danger)}
+.alert{display:none;padding:12px 16px;border-radius:var(--radius-sm);font-size:.87rem;margin:12px 0}
+.alert.show{display:flex;align-items:flex-start;gap:10px}
+.alert-error{background:var(--danger-dim);border:1px solid rgba(255,77,109,.3);color:var(--danger)}
+.alert-success{background:var(--success-dim);border:1px solid rgba(16,223,170,.3);color:var(--success)}
+.alert-warning{background:var(--warning-dim);border:1px solid rgba(255,176,32,.3);color:var(--warning)}
+.alert-info{background:var(--primary-dim);border:1px solid rgba(0,194,255,.3);color:var(--primary)}
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);padding:11px 14px;text-align:left;font-size:.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-sm)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-val{height:36px;width:60%}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-wrap{display:none;justify-content:center;padding:30px}
+.loader-wrap.show{display:flex}
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+.toast{padding:12px 18px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:10px;min-width:260px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:slideIn .3s ease}
+.toast-info{background:var(--surface);border:1px solid var(--primary);color:var(--text)}
+.toast-success{background:rgba(16,223,170,.15);border:1px solid var(--success);color:var(--success)}
+.toast-error{background:rgba(255,77,109,.15);border:1px solid var(--danger);color:var(--danger)}
+.toast-warning{background:rgba(255,176,32,.15);border:1px solid var(--warning);color:var(--warning)}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+.drug-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all var(--transition);position:relative;overflow:hidden}
+.drug-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--purple))}
+.drug-card:hover{border-color:var(--primary);box-shadow:var(--shadow-card)}
+.drug-rank{position:absolute;top:14px;right:14px;width:26px;height:26px;background:var(--primary-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--primary)}
+.drug-name{font-size:1rem;font-weight:700;margin-bottom:3px}
+.drug-class{font-size:.75rem;color:var(--text3);margin-bottom:8px}
+.severity-major{background:var(--danger-dim);border:1px solid rgba(255,77,109,.3);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px}
+.severity-moderate{background:var(--warning-dim);border:1px solid rgba(255,176,32,.3);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px}
+.severity-minor{background:var(--success-dim);border:1px solid rgba(16,223,170,.3);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px}
+.severity-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.severity-major .severity-label{color:var(--danger)}
+.severity-moderate .severity-label{color:var(--warning)}
+.severity-minor .severity-label{color:var(--success)}
+.report-section{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.report-section:last-child{border-bottom:none}
+.report-label{font-size:.73rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.report-value{font-size:.88rem;color:var(--text);line-height:1.6}
+.report-tags{display:flex;flex-wrap:wrap;gap:6px}
+.report-tag{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:3px 10px;border-radius:20px;font-size:.74rem}
+.warning-box{background:var(--warning-dim);border:1px solid rgba(255,176,32,.3);border-radius:var(--radius-sm);padding:12px;display:flex;gap:8px;align-items:flex-start;font-size:.82rem;color:var(--warning)}
+.disease-section{background:var(--surface2);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px}
+.disease-section h3{font-size:.75rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.disease-list{list-style:none}
+.disease-list li{padding:4px 0;font-size:.85rem;color:var(--text2);border-bottom:1px solid var(--border)}
+.disease-list li:last-child{border-bottom:none}
+.disease-list li::before{content:'→ ';color:var(--primary);font-weight:600}
+.emergency-box{background:var(--danger-dim);border:2px solid rgba(255,77,109,.4);border-radius:var(--radius-sm);padding:14px}
+.emergency-box h3{color:var(--danger);font-size:.8rem;font-weight:700;text-transform:uppercase;margin-bottom:8px}
+.search-wrap{position:relative}
+.search-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:11px 14px 11px 40px;font-size:.9rem;transition:all var(--transition);font-family:'Inter',sans-serif}
+.search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);z-index:50;box-shadow:var(--shadow-card);max-height:260px;overflow-y:auto;display:none}
+.search-results.show{display:block}
+.search-result-item{padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.84rem;border-bottom:1px solid var(--border)}
+.search-result-item:last-child{border-bottom:none}
+.search-result-item:hover{background:var(--surface2)}
+.symptom-cloud{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.symptom-tag{padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer;transition:all var(--transition);color:var(--text2)}
+.symptom-tag:hover,.symptom-tag.selected{background:var(--primary-dim);border-color:var(--primary);color:var(--primary)}
+.drug-pill-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.drug-pill{display:flex;align-items:center;gap:6px;background:var(--primary-dim);border:1px solid var(--primary);color:var(--primary);padding:4px 11px;border-radius:20px;font-size:.8rem;font-weight:600}
+.drug-pill .remove{cursor:pointer;opacity:.7}
+.drug-pill .remove:hover{opacity:1}
+.compare-table{width:100%;border-collapse:collapse}
+.compare-table th{background:var(--primary-dim);color:var(--primary);padding:11px 14px;font-size:.8rem;font-weight:700;text-align:center}
+.compare-table th:first-child{text-align:left;background:var(--surface2);color:var(--text2)}
+.compare-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.83rem;text-align:center}
+.compare-table td:first-child{text-align:left;font-weight:500;color:var(--text2);background:var(--surface2)}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-winner{background:var(--success-dim)!important;color:var(--success)!important;font-weight:700!important}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:190}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{left:0}
+  .hamburger{display:flex}
+  .grid-3,.grid-2{grid-template-columns:1fr}
+  .grid-4{grid-template-columns:1fr 1fr}
+  .breadcrumb{display:none}
+  .sidebar-overlay{display:block!important;display:none}
+}
+</style>
+<!-- Responsive/PWA layer: mobile-first overrides, loaded after the page's
+     own <style> block so it can patch layout without editing the rules
+     above (keeps business logic/markup untouched). -->
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}"/>
+</head>
+<body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-wrap">
+      <div class="logo-icon">💊</div>
+      <div>
+        <div class="logo-name">IDP<span>DR</span></div>
+        <div class="logo-sub">Disease &amp; Drug ML Prototype</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="navigate('home',this)"><span class="nav-icon">🏠</span> Dashboard</div>
+    <div class="nav-label">Diagnosis &amp; Search</div>
+    <div class="nav-item" onclick="navigate('diagnose',this)"><span class="nav-icon">🔬</span> Disease Diagnosis</div>
+    <div class="nav-item" onclick="navigate('drugsearch',this)"><span class="nav-icon">🔍</span> Drug Search</div>
+    <div class="nav-item" onclick="navigate('report',this)"><span class="nav-icon">📋</span> Drug Report <span class="nav-badge new">New</span></div>
+    <div class="nav-label">Recommendations</div>
+    <div class="nav-item" onclick="navigate('recommend',this)"><span class="nav-icon">💊</span> Drug Recommendations</div>
+    <div class="nav-item" onclick="navigate('smartrec',this)"><span class="nav-icon">🤖</span> Smart Recommend <span class="nav-badge new">AI</span></div>
+    <div class="nav-label">Analysis</div>
+    <div class="nav-item" onclick="navigate('compare',this)"><span class="nav-icon">⚖️</span> Drug Comparison</div>
+    <div class="nav-item" onclick="navigate('interactions',this)"><span class="nav-icon">⚡</span> Interaction Checker <span class="nav-badge orange">Safety</span></div>
+    <div class="nav-item" onclick="navigate('disease',this)"><span class="nav-icon">🏥</span> Disease Info</div>
+    <div class="nav-item" onclick="navigate('buydrug',this)"><span class="nav-icon">🛒</span> Where to Buy</div>
+    <div class="nav-item" onclick="navigate('sentiment',this)"><span class="nav-icon">💬</span> Sentiment Analysis</div>
+  </nav>
+  <div class="sidebar-user profile-menu" id="profile-menu-wrap">
+    <button class="profile-trigger" id="profile-trigger" onclick="toggleProfileMenu(event)">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div>
+        <div class="user-name" id="user-name-display">Loading...</div>
+        <div class="user-role" id="user-role-display">—</div>
+      </div>
+      <svg class="pm-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+    <div class="profile-dropdown" id="profile-dropdown">
+      <div class="pd-header">
+        <div class="pd-avatar" id="pd-avatar">?</div>
+        <div style="min-width:0">
+          <div class="pd-name" id="pd-name">Loading...</div>
+          <span class="pd-role-badge" id="pd-role-badge">—</span>
+        </div>
+      </div>
+      <div class="pd-divider"></div>
+      <button class="pd-item" onclick="navigate('profile',null);closeProfileMenu()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        My Profile
+      </button>
+      <button class="pd-item" onclick="navigate('profile',null);closeProfileMenu();setTimeout(()=>document.getElementById('profile-tab-settings')?.click(),50)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Account Settings
+      </button>
+      <button class="pd-item" onclick="navigate('profile',null);closeProfileMenu();setTimeout(()=>document.getElementById('profile-tab-notif')?.click(),50)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        Notifications
+      </button>
+      <button class="pd-item" id="pd-appearance-toggle" onclick="toggleAppearanceSubmenu(event)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        Appearance
+        <svg class="pd-arrow" id="pd-appearance-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <div class="pd-submenu" id="appearance-submenu">
+        <button class="pd-theme-opt" data-theme-opt="light" onclick="setTheme('light')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          Light
+        </button>
+        <button class="pd-theme-opt" data-theme-opt="dark" onclick="setTheme('dark')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          Dark
+        </button>
+        <button class="pd-theme-opt" data-theme-opt="system" onclick="setTheme('system')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          System
+        </button>
+      </div>
+      <div class="pd-divider"></div>
+      <button class="pd-item" onclick="navigate('help',null);closeProfileMenu()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Help &amp; Support
+      </button>
+      <div class="pd-divider"></div>
+      <button class="pd-item pd-danger" onclick="doSignOut()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Sign Out
+      </button>
+    </div>
+  </div>
+</aside>
+<header class="topbar">
+  <button class="hamburger" onclick="openSidebar()">☰</button>
+  <div>
+    <div class="topbar-title" id="topbar-title">⬡ <span>Dashboard</span></div>
+    <div class="breadcrumb" id="breadcrumb">IDPDR → <span>Dashboard</span></div>
+  </div>
+  <div class="topbar-actions" id="admin-link-wrap"></div>
+</header>
+<main class="main">
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="page-header">
+    <h1>Welcome to <em>IDPDR</em></h1>
+    <p style="font-weight:600;color:var(--text2);margin-bottom:4px">An Intelligent Disease Prediction and Drug Recommendation Prototype — Using Multiple Approaches of Machine Learning Algorithms</p>
+    <p>AI-powered drug recommendation and medical intelligence platform. 4 ML models, VADER NLP, drug interaction checker, and comprehensive drug reports.</p>
+  </div>
+  <div class="grid-4">
+    <div class="card"><div class="card-icon" style="background:var(--primary-dim)">💊</div><div class="card-title">Drug Reviews</div><div class="card-value" id="stat-reviews"><div class="skeleton skel-val"></div></div><div class="card-sub">Total analyzed</div></div>
+    <div class="card"><div class="card-icon" style="background:var(--success-dim)">🔬</div><div class="card-title">Predictions</div><div class="card-value" id="stat-preds"><div class="skeleton skel-val"></div></div><div class="card-sub">ML diagnoses run</div></div>
+    <div class="card"><div class="card-icon" style="background:var(--purple-dim)">🧬</div><div class="card-title">Conditions</div><div class="card-value" id="stat-conds"><div class="skeleton skel-val"></div></div><div class="card-sub">Supported conditions</div></div>
+    <div class="card"><div class="card-icon" style="background:var(--orange-dim)">⚡</div><div class="card-title">Interactions Checked</div><div class="card-value" id="stat-interactions"><div class="skeleton skel-val"></div></div><div class="card-sub">Safety checks</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">📊 Sentiment Distribution</div><canvas id="chart-sentiment" height="170"></canvas></div>
+    <div class="card"><div class="card-title">🎯 Model Accuracy</div><canvas id="chart-accuracy" height="170"></canvas></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">🏆 Top Drugs by Condition</div><div id="top-drugs-list"><div class="loader-wrap show"><div class="spinner"></div></div></div></div>
+    <div class="card">
+      <div class="card-title">⚡ Quick Actions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+        <button class="btn btn-primary btn-sm" onclick="navigate('diagnose',document.querySelector('[onclick*=diagnose]'))">🔬 Run Diagnosis</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('report',document.querySelector('[onclick*=report]'))">📋 Drug Report</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('interactions',document.querySelector('[onclick*=interactions]'))">⚡ Check Interactions</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('compare',document.querySelector('[onclick*=compare]'))">⚖️ Compare Drugs</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('disease',document.querySelector('[onclick*=disease]'))">🏥 Disease Info</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('smartrec',document.querySelector('[onclick*=smartrec]'))">🤖 AI Recommend</button>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="card-title">📖 Disclaimer</div>
+        <p style="font-size:.78rem;color:var(--text3);line-height:1.6">IDPDR (Intelligent Disease Prediction & Drug Recommendation) is for educational purposes only. Always consult a qualified healthcare provider before making medication decisions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGNOSE -->
+<div class="page" id="page-diagnose">
+  <div class="page-header">
+    <h1>🔬 Disease <em>Diagnosis</em></h1>
+    <p>Enter symptoms and 4 ML models (Naive Bayes, Random Forest, SVM, Logistic Regression) will predict your condition via ensemble majority vote.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">💡 Describe Symptoms</div>
+      <div class="symptom-cloud" id="symptom-cloud">
+        <span class="symptom-tag" onclick="toggleSymptom(this,'fever')">Fever</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'headache')">Headache</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'fatigue')">Fatigue</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'nausea')">Nausea</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'chest pain')">Chest Pain</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'shortness of breath')">Shortness of Breath</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'dizziness')">Dizziness</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'frequent urination')">Frequent Urination</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'blurred vision')">Blurred Vision</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'weight gain')">Weight Gain</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'insomnia')">Insomnia</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'wheezing')">Wheezing</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'heartburn')">Heartburn</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'cold sensitivity')">Cold Sensitivity</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this,'persistent sadness')">Persistent Sadness</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Or type symptoms manually</label>
+        <textarea class="form-textarea" id="symptoms-input" rows="4" placeholder="E.g., persistent headache, nausea, sensitivity to light..."></textarea>
+        <div class="input-hint">More detail = better accuracy</div>
+      </div>
+      <div id="diagnose-alert" class="alert alert-error"></div>
+      <button class="btn btn-primary btn-lg" onclick="runDiagnosis()" id="diagnose-btn" style="width:100%">🔬 Run AI Diagnosis</button>
+    </div>
+    <div>
+      <div class="card" id="diagnose-result" style="display:none">
+        <div class="card-title">🎯 Results</div>
+        <div id="diagnose-output"></div>
+        <div id="diag-report-area" style="margin-top:16px"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📌 Condition Reference</div>
+        <select class="form-select" id="cond-ref-select" onchange="loadConditionSymptoms()"><option value="">Pick a condition...</option></select>
+        <div id="cond-symptoms-display" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DRUG SEARCH -->
+<div class="page" id="page-drugsearch">
+  <div class="page-header">
+    <h1>🔍 Drug <em>Search</em></h1>
+    <p>Search for medicines by name, generic name, or brand name across our database.</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="drug-search-input" type="text" placeholder="Search drugs, generics, brand names..." oninput="onDrugSearch()" onkeydown="if(event.key==='Enter')execDrugSearch()"/>
+      <div class="search-results" id="drug-search-dropdown"></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="execDrugSearch()">🔍 Search</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('drug-search-input').value='';execDrugSearch()">📋 Browse All Drugs</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('drug-search-input').value='';document.getElementById('drugsearch-results').innerHTML=''">Clear</button>
+    </div>
+  </div>
+  <div id="drugsearch-results"></div>
+</div>
+
+<!-- DRUG REPORT -->
+<div class="page" id="page-report">
+  <div class="page-header">
+    <h1>📋 Drug <em>Report</em></h1>
+    <p>Generate a comprehensive drug profile: dosage, side effects, safety, interactions, storage, and alternatives.</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="form-group">
+      <label class="form-label">Drug Name</label>
+      <div style="display:flex;gap:10px">
+        <input class="form-input" id="report-drug-input" type="text" placeholder="E.g., Metformin, Ozempic, Lisinopril..." list="drug-datalist" style="flex:1"/>
+        <datalist id="drug-datalist">
+          <option value="Metformin"/><option value="Ozempic"/><option value="Lisinopril"/>
+          <option value="Sertraline"/><option value="Salbutamol"/><option value="Sumatriptan"/>
+          <option value="Omeprazole"/><option value="Levothyroxine"/><option value="Atorvastatin"/>
+          <option value="Amoxicillin"/>
+        </datalist>
+        <button class="btn btn-primary" onclick="generateDrugReport()">📋 Generate Report</button>
+      </div>
+      <div class="input-hint">Try: Metformin · Ozempic · Lisinopril · Sertraline · Salbutamol · Atorvastatin</div>
+    </div>
+    <div id="report-alert" class="alert"></div>
+  </div>
+  <div class="loader-wrap" id="report-loader"><div class="spinner"></div></div>
+  <div id="report-output"></div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div class="page" id="page-recommend">
+  <div class="page-header">
+    <h1>💊 Drug <em>Recommendations</em></h1>
+    <p>Top-rated drugs per condition ranked by Bayesian + VADER weighted scoring (Rating 70% + Sentiment 30%).</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="form-group">
+      <label class="form-label">Select Medical Condition</label>
+      <select class="form-select" id="rec-condition"><option value="">Choose a condition...</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="loadRecommendations()">💊 Get Recommendations</button>
+    <div id="rec-alert" class="alert alert-error"></div>
+  </div>
+  <div class="loader-wrap" id="rec-loader"><div class="spinner"></div></div>
+  <div id="rec-output"></div>
+</div>
+
+<!-- SMART RECOMMEND -->
+<div class="page" id="page-smartrec">
+  <div class="page-header">
+    <h1>🤖 Smart <em>AI Recommendation</em></h1>
+    <p>AI predicts your condition from symptoms then recommends personalized drugs based on your age, gender, and allergies.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📝 Patient Profile</div>
+      <div class="form-group"><label class="form-label">Symptoms *</label><textarea class="form-textarea" id="sr-symptoms" rows="3" placeholder="Describe your symptoms..."></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Age (optional)</label><input class="form-input" id="sr-age" type="number" min="1" max="120" placeholder="e.g., 45"/></div>
+        <div class="form-group"><label class="form-label">Gender (optional)</label><select class="form-select" id="sr-gender"><option value="">Select...</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Known Allergies (optional)</label>
+        <input class="form-input" id="sr-allergies" type="text" placeholder="E.g., Penicillin, Sulfa drugs (comma-separated)"/>
+      </div>
+      <div id="sr-alert" class="alert alert-error"></div>
+      <button class="btn btn-primary btn-lg" onclick="runSmartRecommend()" style="width:100%">🤖 Get AI Recommendation</button>
+    </div>
+    <div>
+      <div class="loader-wrap" id="sr-loader"><div class="spinner"></div></div>
+      <div id="sr-output"></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE -->
+<div class="page" id="page-compare">
+  <div class="page-header">
+    <h1>⚖️ Drug <em>Comparison</em></h1>
+    <p>Side-by-side comparison of two drugs: ratings, sentiment, safety, pricing, interactions, and more.</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:end">
+      <div class="form-group" style="margin:0"><label class="form-label">Condition</label><select class="form-select" id="cmp-condition" onchange="updateDrugOptions()"><option value="">Select condition...</option></select></div>
+      <div class="form-group" style="margin:0"><label class="form-label">Drug A</label><select class="form-select" id="cmp-drug-a"><option>Select condition first</option></select></div>
+      <div class="form-group" style="margin:0"><label class="form-label">Drug B</label><select class="form-select" id="cmp-drug-b"><option>Select condition first</option></select></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+      <button class="btn btn-primary" onclick="runComparison()">⚖️ Compare Drugs</button>
+      <div id="cmp-alert" class="alert alert-error" style="margin:0"></div>
+    </div>
+  </div>
+  <div class="loader-wrap" id="cmp-loader"><div class="spinner"></div></div>
+  <div id="cmp-output"></div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="page" id="page-interactions">
+  <div class="page-header">
+    <h1>⚡ Drug Interaction <em>Checker</em></h1>
+    <p>Add 2+ medicines to check for known interactions. Color-coded by severity: Major (Red) · Moderate (Orange) · Minor (Green).</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">💊 Add Medicines</div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <input class="form-input" id="interaction-drug-input" type="text" placeholder="Type drug name and press Add..." list="interaction-datalist" style="flex:1"/>
+      <datalist id="interaction-datalist">
+        <option value="Warfarin"/><option value="Aspirin"/><option value="Metformin"/>
+        <option value="Sertraline"/><option value="Tramadol"/><option value="Lisinopril"/>
+        <option value="Spironolactone"/><option value="Atorvastatin"/><option value="Clarithromycin"/>
+        <option value="Omeprazole"/><option value="Clopidogrel"/><option value="Sumatriptan"/>
+        <option value="Levothyroxine"/><option value="Salbutamol"/><option value="Propranolol"/>
+      </datalist>
+      <button class="btn btn-primary" onclick="addInteractionDrug()">+ Add</button>
+    </div>
+    <div class="drug-pill-list" id="interaction-drug-list"></div>
+    <div class="input-hint" style="margin-top:8px">Add at least 2 drugs · Press Enter or click Add</div>
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="checkInteractions()">⚡ Check Interactions</button>
+      <button class="btn btn-ghost" onclick="clearInteractionDrugs()">Clear All</button>
+    </div>
+  </div>
+  <div class="loader-wrap" id="inter-loader"><div class="spinner"></div></div>
+  <div id="interaction-output"></div>
+</div>
+
+<!-- DISEASE INFO -->
+<div class="page" id="page-disease">
+  <div class="page-header">
+    <h1>🏥 Disease <em>Information</em></h1>
+    <p>Comprehensive disease profiles: symptoms, causes, diagnosis, treatments, lifestyle changes, and emergency warning signs.</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div class="form-group" style="margin:0;flex:1">
+        <label class="form-label">Select Condition</label>
+        <select class="form-select" id="disease-select" onchange="loadDiseaseInfo()">
+          <option value="">Choose a condition...</option>
+          <option value="Diabetes Type 2">Diabetes Type 2</option>
+          <option value="Hypertension">Hypertension</option>
+          <option value="Depression">Depression</option>
+          <option value="Asthma">Asthma</option>
+          <option value="Migraine">Migraine</option>
+          <option value="GERD">GERD</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="loadDiseaseInfo()">🏥 Get Info</button>
+    </div>
+  </div>
+  <div class="loader-wrap" id="disease-loader"><div class="spinner"></div></div>
+  <div id="disease-output"></div>
+</div>
+
+<!-- WHERE TO BUY -->
+<div class="page" id="page-buydrug">
+  <div class="page-header">
+    <h1>🛒 Where to Buy <em>Medicine</em></h1>
+    <p>Find availability info, estimated pricing, and licensed online pharmacy options. Always buy from verified pharmacies.</p>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div class="form-group" style="margin:0;flex:1">
+        <label class="form-label">Drug Name</label>
+        <input class="form-input" id="buy-drug-input" type="text" placeholder="E.g., Metformin, Ozempic..." list="drug-datalist"/>
+      </div>
+      <button class="btn btn-primary" onclick="checkDrugAvailability()">🛒 Find Where to Buy</button>
+    </div>
+  </div>
+  <div class="loader-wrap" id="buy-loader"><div class="spinner"></div></div>
+  <div id="buy-output"></div>
+</div>
+
+<!-- SENTIMENT -->
+<div class="page" id="page-sentiment">
+  <div class="page-header">
+    <h1>💬 Sentiment <em>Analysis</em></h1>
+    <p>Analyze drug reviews using VADER NLP. Sentiment score contributes 30% to the drug recommendation algorithm.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📝 Drug Review</div>
+      <div class="form-group"><label class="form-label">Drug Name</label><input class="form-input" id="sent-drug" type="text" placeholder="E.g., Metformin"/></div>
+      <div class="form-group"><label class="form-label">Condition</label><input class="form-input" id="sent-condition" type="text" placeholder="E.g., Diabetes Type 2"/></div>
+      <div class="form-group"><label class="form-label">Patient Rating (1-10)</label><input class="form-input" id="sent-rating" type="number" min="1" max="10" value="7"/></div>
+      <div class="form-group"><label class="form-label">Review Text *</label><textarea class="form-textarea" id="sent-review" rows="4" placeholder="Write your drug review..."></textarea></div>
+      <div id="sent-alert" class="alert alert-error"></div>
+      <button class="btn btn-primary btn-lg" onclick="runSentiment()" style="width:100%">💬 Analyze Sentiment</button>
+    </div>
+    <div>
+      <div class="card" id="sent-result-card" style="display:none"><div class="card-title">🎯 Result</div><div id="sent-output"></div></div>
+      <div class="card" style="margin-top:16px"><div class="card-title">📋 Recent Reviews</div><div id="recent-reviews-table"><div class="loader-wrap show"><div class="spinner"></div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MY PROFILE / ACCOUNT SETTINGS -->
+<div class="page" id="page-profile">
+  <div class="page-header">
+    <h1>👤 My <em>Profile</em></h1>
+    <p>Manage your personal information, security, and notification preferences.</p>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:2px">
+    <button class="profile-tab active" id="profile-tab-info" onclick="showProfileTab('info')">Profile Info</button>
+    <button class="profile-tab" id="profile-tab-settings" onclick="showProfileTab('settings')">Account Settings</button>
+    <button class="profile-tab" id="profile-tab-notif" onclick="showProfileTab('notif')">Notifications</button>
+  </div>
+
+  <div id="profile-panel-info" class="profile-panel">
+    <div class="card" style="max-width:560px">
+      <div class="card-title">Personal Information</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="prof-first-name"/></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="prof-last-name"/></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="prof-email" type="email"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="prof-phone"/></div>
+        <div class="form-group"><label class="form-label">Age</label><input class="form-input" id="prof-age" type="number" min="0" max="120"/></div>
+        <div class="form-group"><label class="form-label">Gender</label>
+          <select class="form-select" id="prof-gender"><option value="">Select...</option><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Bio</label><input class="form-input" id="prof-bio" maxlength="300" placeholder="A short line about yourself"/></div>
+      <button class="btn btn-primary btn-sm" onclick="saveProfileInfo()">💾 Save Changes</button>
+    </div>
+  </div>
+
+  <div id="profile-panel-settings" class="profile-panel" style="display:none">
+    <div class="card" style="max-width:560px">
+      <div class="card-title">🔒 Change Password</div>
+      <div class="form-group"><label class="form-label">Current Password</label><input class="form-input" type="password" id="cp-current"/></div>
+      <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" id="cp-new" placeholder="At least 6 characters"/></div>
+      <div class="form-group"><label class="form-label">Confirm New Password</label><input class="form-input" type="password" id="cp-confirm"/></div>
+      <button class="btn btn-primary btn-sm" onclick="changePassword()">Update Password</button>
+    </div>
+  </div>
+
+  <div id="profile-panel-notif" class="profile-panel" style="display:none">
+    <div class="card" style="max-width:560px">
+      <div class="card-title">🔔 Notification Preferences</div>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 0">
+        <input type="checkbox" id="notif-email" style="width:auto"/>
+        <span>Email me about important account and health-report activity</span>
+      </label>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveNotifPrefs()">Save Preference</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP & SUPPORT -->
+<div class="page" id="page-help">
+  <div class="page-header">
+    <h1>🆘 Help &amp; <em>Support</em></h1>
+    <p>Answers to common questions, and how to reach us if you need more help.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">❓ Frequently Asked Questions</div>
+      <div class="faq-item"><strong>Is IDPDR a substitute for a doctor?</strong><p>No. Every prediction, drug report, and recommendation is for educational purposes only. Always consult a licensed physician or pharmacist before making medical decisions.</p></div>
+      <div class="faq-item"><strong>How do I generate a Disease Diagnosis Report?</strong><p>Run a diagnosis from the "Disease Diagnosis" page, then click "Generate Diagnosis Report" to fill in patient details and produce a printable/downloadable PDF.</p></div>
+      <div class="faq-item"><strong>How do I change my password?</strong><p>Open the profile menu (bottom-left) → My Profile → Account Settings tab.</p></div>
+      <div class="faq-item"><strong>I forgot my password — what do I do?</strong><p>From the sign-in page, click "Forgot password?" and follow the reset link.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title">✉️ Contact Support</div>
+      <p style="color:var(--text2);font-size:.85rem;line-height:1.7">
+        For account issues, data questions, or feedback, reach out to our support team:
+      </p>
+      <p style="margin-top:10px"><strong>Email:</strong> <span id="help-support-email">support@idpdr.ai</span></p>
+      <p style="margin-top:6px"><strong>Response time:</strong> within 1–2 business days</p>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="card-title" style="font-size:.9rem;margin-bottom:8px">📖 Disclaimer</div>
+        <p style="font-size:.78rem;color:var(--text3);line-height:1.6">IDPDR (Intelligent Disease Prediction & Drug Recommendation) is for educational purposes only. Always consult a qualified healthcare provider before making medication decisions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<div id="toast-container"></div>
+
+<script>
+const API='';
+const PAGE_TITLES={home:'Dashboard',diagnose:'Disease Diagnosis',drugsearch:'Drug Search',
+  report:'Drug Report',recommend:'Drug Recommendations',smartrec:'Smart AI Recommendation',
+  compare:'Drug Comparison',interactions:'Interaction Checker',disease:'Disease Info',
+  buydrug:'Where to Buy',sentiment:'Sentiment Analysis',profile:'My Profile',help:'Help & Support'};
+const SYMPTOMS_MAP={
+  'Diabetes Type 2':'frequent urination · increased thirst · fatigue · blurred vision · slow healing wounds',
+  'Hypertension':'headache · dizziness · chest pain · shortness of breath · nosebleed',
+  'Depression':'persistent sadness · loss of interest · fatigue · sleep problems · hopelessness',
+  'Anxiety':'excessive worry · restlessness · rapid heartbeat · sweating · trembling',
+  'Asthma':'wheezing · coughing · chest tightness · shortness of breath · night cough',
+  'Migraine':'severe headache · nausea · light sensitivity · sound sensitivity · throbbing pain',
+  'GERD':'heartburn · chest pain · regurgitation · difficulty swallowing · sour taste',
+  'Hypothyroidism':'fatigue · weight gain · cold sensitivity · constipation · dry skin · hair loss',
+  'Insomnia':'trouble falling asleep · waking during night · fatigue · irritability · daytime sleepiness',
+  'Pain':'localized pain · swelling · tenderness · inflammation · limited mobility',
+  'Infection':'fever · chills · fatigue · body aches · redness and swelling',
+  'High Cholesterol':'chest pain · fatigue · yellowish skin patches · shortness of breath',
+};
+
+/* ── UTILS ── */
+function toast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className=`toast toast-${type}`;
+  const icons={info:'ℹ️',success:'✅',error:'❌',warning:'⚠️'};
+  t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>t.remove(),4000);
+}
+/* ── THEME SYSTEM (Light / Dark / System) ── */
+function applyTheme(pref){
+  const sysDark=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const effective = pref==='system' ? (sysDark?'dark':'light') : pref;
+  document.documentElement.setAttribute('data-theme', effective);
+  document.querySelectorAll('.pd-theme-opt').forEach(b=>b.classList.toggle('active', b.dataset.themeOpt===pref));
+}
+function setTheme(pref){
+  localStorage.setItem('idpdr-theme', pref);
+  applyTheme(pref);
+}
+(function(){
+  const saved=localStorage.getItem('idpdr-theme')||'dark';
+  applyTheme(saved);
+  if(window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+      if((localStorage.getItem('idpdr-theme')||'dark')==='system') applyTheme('system');
+    });
+  }
+})();
+
+/* ── PROFILE DROPDOWN ── */
+function toggleProfileMenu(e){
+  if(e)e.stopPropagation();
+  const dd=document.getElementById('profile-dropdown');
+  const trig=document.getElementById('profile-trigger');
+  const open=dd.classList.toggle('open');
+  trig.classList.toggle('menu-open',open);
+}
+function closeProfileMenu(){
+  document.getElementById('profile-dropdown').classList.remove('open');
+  document.getElementById('profile-trigger').classList.remove('menu-open');
+  document.getElementById('appearance-submenu').classList.remove('open');
+}
+function toggleAppearanceSubmenu(e){
+  if(e)e.stopPropagation();
+  document.getElementById('appearance-submenu').classList.toggle('open');
+  document.getElementById('pd-appearance-toggle').classList.toggle('submenu-open');
+}
+document.addEventListener('click',(e)=>{
+  const wrap=document.getElementById('profile-menu-wrap');
+  if(wrap && !wrap.contains(e.target)) closeProfileMenu();
+});
+async function doSignOut(){
+  window.location.href='/signout/';
+}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block';}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='none';}
+function navigate(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('topbar-title').innerHTML=`⬡ <span>${PAGE_TITLES[page]}</span>`;
+  document.getElementById('breadcrumb').innerHTML=`IDPDR → <span>${PAGE_TITLES[page]}</span>`;
+  closeSidebar();
+  if(page==='home')loadHomeDash();
+  if(page==='sentiment')loadRecentReviews();
+  if(page==='diagnose')initDiagnoseRef();
+  if(page==='recommend')initRecConditions();
+  if(page==='compare')initCompareConditions();
+  if(page==='profile')loadProfilePage();
+}
+function showAlert(id,msg,type='error'){const e=document.getElementById(id);if(!e)return;e.className=`alert alert-${type} show`;e.textContent=msg;}
+function clearAlert(id){const e=document.getElementById(id);if(e){e.className='alert';e.textContent='';}}
+function setLoad(id,on){const e=document.getElementById(id);if(e)e.className=`loader-wrap${on?' show':''}`;;}
+function animateCount(el,target){
+  let n=0;const step=Math.max(1,Math.ceil(target/50));
+  const id=setInterval(()=>{n=Math.min(n+step,target);el.textContent=n.toLocaleString();if(n>=target)clearInterval(id);},25);
+}
+function getCookie(name){let v=null;document.cookie.split(';').forEach(c=>{const[k,val]=c.trim().split('=');if(k===name)v=decodeURIComponent(val||'');});return v;}
+async function apiFetch(url,opts={}){
+  // Always include session cookie
+  opts.credentials='include';
+  // Auto-inject CSRF token for mutating requests
+  if(opts.method&&opts.method!=='GET'){
+    opts.headers=opts.headers||{};
+    if(!opts.headers['X-CSRFToken'])opts.headers['X-CSRFToken']=getCookie('csrftoken')||'';
+  }
+  const r=await fetch(API+url,opts);
+  let d;
+  try{d=await r.json();}catch{d={error:'Invalid server response'};}
+  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
+  return d;
+}
+// Ensure CSRF cookie is set by fetching it on page load
+async function ensureCSRF(){
+  try{await fetch('/api/health/',{credentials:'include'});}catch{}
+}
+
+/* ── USER ── */
+let CURRENT_USER=null;
+(async function(){
+  try{
+    const d=await apiFetch('/api/auth/me/');
+    CURRENT_USER=d;
+    if(d.authenticated){
+      const initial=(d.first_name?.[0]||d.username[0]).toUpperCase();
+      const displayName=d.first_name||d.username;
+      const isAdmin=d.role==='admin';
+      document.getElementById('user-avatar').textContent=initial;
+      document.getElementById('user-name-display').textContent=displayName;
+      document.getElementById('user-role-display').textContent=isAdmin?'👑 Administrator':'👤 Patient';
+      document.getElementById('pd-avatar').textContent=initial;
+      document.getElementById('pd-name').textContent=d.first_name?`${d.first_name} ${d.last_name||''}`.trim():d.username;
+      const roleBadge=document.getElementById('pd-role-badge');
+      roleBadge.textContent=isAdmin?'Administrator':'Patient';
+      roleBadge.className='pd-role-badge '+(isAdmin?'role-admin':'role-patient');
+      if(isAdmin){
+        document.getElementById('admin-link-wrap').innerHTML=
+          `<a href="/admin-dashboard/" class="icon-btn" style="width:auto;padding:0 14px;gap:6px;display:inline-flex;align-items:center;font-size:.8rem;font-weight:700" title="Go to Admin Dashboard">🛡️ Admin Dashboard</a>`;
+      }
+    }else{
+      document.getElementById('user-name-display').textContent='Guest';
+      document.getElementById('user-role-display').textContent='🔒 Not Signed In';
+    }
+  }catch{}
+})();
+
+/* ── HOME DASHBOARD ── */
+let homeLoaded=false,sentimentChart=null,accuracyChart=null;
+async function loadHomeDash(){
+  if(homeLoaded)return;
+  try{
+    const d=await apiFetch('/api/dashboard/');
+    const map={'stat-reviews':d.total_reviews,'stat-preds':d.total_predictions,
+      'stat-conds':d.conditions_supported,'stat-interactions':d.total_interaction_checks||0};
+    for(const[id,val]of Object.entries(map)){
+      const el=document.getElementById(id);if(el){el.innerHTML='';animateCount(el,val);}
+    }
+    // Sentiment doughnut
+    const sc=document.getElementById('chart-sentiment');
+    if(sc){if(sentimentChart)sentimentChart.destroy();
+      const sd=d.sentiment_distribution||{};
+      sentimentChart=new Chart(sc,{type:'doughnut',
+        data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[sd.positive||0,sd.neutral||0,sd.negative||0],backgroundColor:['#10DFAA','#FFB020','#FF4D6D'],borderWidth:0}]},
+        options:{plugins:{legend:{labels:{color:'#94A3B8',font:{size:11}}}},cutout:'68%'}});}
+    // Accuracy bar
+    const ac=document.getElementById('chart-accuracy');
+    if(ac){if(accuracyChart)accuracyChart.destroy();
+      const acc=d.model_accuracies||{};
+      accuracyChart=new Chart(ac,{type:'bar',
+        data:{labels:Object.keys(acc),datasets:[{data:Object.values(acc),backgroundColor:['#00C2FF','#10DFAA','#8B5CF6','#FFB020'],borderRadius:6,borderSkipped:false}]},
+        options:{plugins:{legend:{display:false}},scales:{
+          x:{ticks:{color:'#94A3B8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+          y:{ticks:{color:'#94A3B8',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'},min:0,max:100}}}});}
+    // Top drugs list
+    const tl=document.getElementById('top-drugs-list');
+    if(tl&&d.top_drugs_by_condition){
+      tl.innerHTML=d.top_drugs_by_condition.map(x=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:.87rem;font-weight:600">${x.drug}</div><div style="font-size:.73rem;color:var(--text3)">${x.condition}</div></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:.82rem;font-weight:700;color:var(--primary)">${x.score}/10</span>
+            <span class="badge badge-success">⭐</span>
+          </div>
+        </div>`).join('');
+    }
+    homeLoaded=true;
+  }catch(e){toast('Dashboard failed: '+e.message,'error');}
+}
+
+/* ── DIAGNOSIS ── */
+let diagRefInit=false;
+function initDiagnoseRef(){
+  if(diagRefInit)return;
+  const sel=document.getElementById('cond-ref-select');
+  Object.keys(SYMPTOMS_MAP).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  diagRefInit=true;
+}
+function loadConditionSymptoms(){
+  const cond=document.getElementById('cond-ref-select').value;
+  const disp=document.getElementById('cond-symptoms-display');
+  if(!cond){disp.innerHTML='';return;}
+  const syms=SYMPTOMS_MAP[cond].split(' · ');
+  const symsStr=syms.join(', ');
+  disp.innerHTML=`<div style="font-size:.75rem;color:var(--text3);margin-bottom:6px">Common symptoms of <strong>${cond}</strong>:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${syms.map(s=>`<span class="badge badge-primary">${s}</span>`).join('')}</div>
+    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('symptoms-input').value='${symsStr}';toast('Symptoms loaded','success')">📋 Use These</button>`;
+}
+function toggleSymptom(el,sym){
+  el.classList.toggle('selected');
+  const sel=[...document.querySelectorAll('.symptom-tag.selected')].map(e=>e.textContent.trim()).join(', ');
+  document.getElementById('symptoms-input').value=sel;
+}
+async function runDiagnosis(){
+  const symptoms=document.getElementById('symptoms-input').value.trim();
+  clearAlert('diagnose-alert');
+  if(!symptoms){showAlert('diagnose-alert','⚠️ Please enter or select symptoms.');return;}
+  const btn=document.getElementById('diagnose-btn');
+  btn.disabled=true;btn.textContent='⏳ Analyzing...';
+  document.getElementById('diagnose-result').style.display='none';
+  try{
+    const d=await apiFetch('/api/predict/',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body:JSON.stringify({symptoms})});
+    const mColors={'Naive Bayes':'#00C2FF','Random Forest':'#10DFAA','SVM':'#8B5CF6','Logistic Regression':'#FFB020'};
+    document.getElementById('diagnose-result').style.display='block';
+    document.getElementById('diagnose-output').innerHTML=`
+      <div style="text-align:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px">
+        <div style="font-size:.72rem;color:var(--text3);margin-bottom:6px">MAJORITY VOTE RESULT</div>
+        <div style="font-size:1.5rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--primary)">${d.majority_vote||'Unknown'}</div>
+        ${d.top_drug?`<div style="margin-top:7px"><span class="badge badge-success">💊 Top Drug: ${d.top_drug}</span></div>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        ${Object.entries(d.predictions||{}).map(([model,info])=>`
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:11px;border-left:3px solid ${mColors[model]||'var(--primary)'}">
+            <div style="font-size:.68rem;font-weight:600;color:var(--text3);margin-bottom:3px">${model}</div>
+            <div style="font-size:.88rem;font-weight:700">${info.condition}</div>
+            ${info.confidence!=null?`<div class="progress-wrap" style="margin-top:5px"><div class="progress-bar primary" style="width:${info.confidence}%"></div></div><div style="font-size:.68rem;color:var(--text3);margin-top:2px">${info.confidence}%</div>`:'' }
+          </div>`).join('')}
+      </div>
+      ${d.disease_summary?.description?`<div style="background:var(--primary-dim);border-radius:var(--radius-sm);padding:11px;font-size:.82rem;color:var(--text2);margin-bottom:12px"><strong style="color:var(--primary)">About:</strong> ${d.disease_summary.description}</div>`:''}
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="quickRecommend('${d.majority_vote}')">💊 Get Drugs</button>
+        <button class="btn btn-secondary btn-sm" onclick="goDiseaseInfo('${d.majority_vote}')">🏥 Disease Info</button>
+        <button class="btn btn-ghost btn-sm" onclick="saveDiagnosis('${d.majority_vote}','${(d.top_drug||'')}')">💾 Save</button>
+        <button class="btn btn-primary btn-sm" onclick="showDiagnosisReportForm()">📄 Generate Diagnosis Report</button>
+      </div>`;
+    window.lastPredictionId=d.id;
+    document.getElementById('diag-report-area').innerHTML='';
+    toast(`Diagnosed: ${d.majority_vote}`,'success');
+  }catch(e){showAlert('diagnose-alert','❌ '+e.message);toast('Diagnosis failed','error');}
+  finally{btn.disabled=false;btn.textContent='🔬 Run AI Diagnosis';}
+}
+function quickRecommend(cond){
+  navigate('recommend',document.querySelector('[onclick*=recommend]'));
+  setTimeout(()=>{
+    const sel=document.getElementById('rec-condition');
+    let found=false;
+    for(const o of sel.options){if(o.value.toLowerCase()===cond.toLowerCase()){sel.value=o.value;found=true;break;}}
+    if(!found&&cond){const o=document.createElement('option');o.value=cond;o.textContent=cond;sel.appendChild(o);sel.value=cond;}
+    loadRecommendations();
+  },200);
+}
+function goDiseaseInfo(cond){
+  navigate('disease',document.querySelector('[onclick*=disease]'));
+  setTimeout(()=>{document.getElementById('disease-select').value=cond;loadDiseaseInfo();},200);
+}
+async function saveDiagnosis(condition,topDrug){
+  const symptoms=document.getElementById('symptoms-input').value.trim();
+  try{
+    await apiFetch('/api/auth/save-diagnosis/',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body:JSON.stringify({symptoms,condition,top_drug:topDrug})});
+    toast('Diagnosis saved!','success');
+  }catch{toast('Login required to save','warning');}
+}
+
+/* ── DISEASE DIAGNOSIS REPORT ── */
+function showDiagnosisReportForm(){
+  const area=document.getElementById('diag-report-area');
+  area.innerHTML=`
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+      <div class="card-title" style="font-size:.95rem">📄 Patient Information for Report</div>
+      <div class="grid-2" style="gap:10px">
+        <div class="form-group"><label class="form-label">Patient Name</label><input class="form-input" id="rep-patient-name" placeholder="e.g. John Doe"/></div>
+        <div class="form-group"><label class="form-label">Age</label><input class="form-input" id="rep-patient-age" type="number" min="0" max="120" placeholder="e.g. 34"/></div>
+        <div class="form-group"><label class="form-label">Gender</label>
+          <select class="form-select" id="rep-patient-gender"><option value="">Select...</option><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Doctor / System Notes (optional)</label><input class="form-input" id="rep-notes" placeholder="Additional notes..."/></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="generateDiagnosisReport()" id="gen-report-btn">📄 Generate Report</button>
+      <div id="diag-report-result" style="margin-top:14px"></div>
+    </div>`;
+}
+async function generateDiagnosisReport(){
+  const btn=document.getElementById('gen-report-btn');
+  btn.disabled=true;btn.textContent='⏳ Generating...';
+  try{
+    const payload={
+      prediction_id: window.lastPredictionId,
+      patient_name: document.getElementById('rep-patient-name').value.trim(),
+      patient_age: document.getElementById('rep-patient-age').value.trim(),
+      patient_gender: document.getElementById('rep-patient-gender').value,
+      notes: document.getElementById('rep-notes').value.trim(),
+    };
+    const r=await apiFetch('/api/diagnosis/report/',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body:JSON.stringify(payload)});
+    renderDiagnosisReport(r);
+    toast('Diagnosis report generated!','success');
+  }catch(e){toast('Failed to generate report: '+e.message,'error');}
+  finally{btn.disabled=false;btn.textContent='📄 Generate Report';}
+}
+function renderDiagnosisReport(r){
+  const out=document.getElementById('diag-report-result');
+  out.innerHTML=`
+    <div class="card" id="printable-diag-report">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div class="card-title" style="margin:0">🩺 Disease Diagnosis Report #${r.id}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.open('/api/diagnosis/report/${r.id}/pdf/?download=1','_blank')">⬇️ Download PDF</button>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-bottom:12px;font-size:.85rem">
+        <div><div class="report-label">Patient</div><div class="report-value">${r.patient_name}${r.patient_age?`, ${r.patient_age}y`:''}${r.patient_gender?`, ${r.patient_gender}`:''}</div></div>
+        <div><div class="report-label">Date &amp; Time</div><div class="report-value">${r.date} · ${r.time}</div></div>
+        <div><div class="report-label">Confidence</div><div class="report-value">${r.confidence_score!=null?r.confidence_score+'%':'N/A'}</div></div>
+      </div>
+      <div class="report-section"><div class="report-label">Symptoms</div><div class="report-value">${r.symptoms}</div></div>
+      <div class="report-section"><div class="report-label">Predicted Disease</div><div class="report-value"><strong>${r.predicted_disease}</strong> — ${r.disease_description||''}</div></div>
+      <div class="report-section"><div class="report-label">Recommended Drugs</div><ul class="disease-list">${(r.recommended_drugs||[]).map(d=>`<li>${d.drug_name} (${d.generic_name}) — ${d.dosage?.adult||'See prescribing information'}</li>`).join('')}</ul></div>
+      <div class="report-section"><div class="report-label">Recommended Tests</div><ul class="disease-list">${(r.recommended_tests||[]).map(t=>`<li>${t}</li>`).join('')}</ul></div>
+      <div class="report-section"><div class="report-label">Precautions</div><ul class="disease-list">${(r.precautions||[]).map(p=>`<li>${p}</li>`).join('')}</ul></div>
+      <div class="report-section"><div class="report-label">Lifestyle Recommendations</div><ul class="disease-list">${(r.lifestyle_recommendations||[]).map(l=>`<li>${l}</li>`).join('')}</ul></div>
+      <div class="warning-box" style="margin-top:10px;white-space:pre-line">${r.doctor_notes}</div>
+    </div>`;
+}
+
+/* ── DRUG SEARCH ── */
+let searchTO;
+function onDrugSearch(){
+  clearTimeout(searchTO);
+  const q=document.getElementById('drug-search-input').value.trim();
+  if(q.length<2){document.getElementById('drug-search-dropdown').classList.remove('show');return;}
+  searchTO=setTimeout(()=>execSearchDropdown(q),300);
+}
+async function execSearchDropdown(q){
+  try{
+    const d=await apiFetch(`/api/drug/search/?q=${encodeURIComponent(q)}`);
+    const dd=document.getElementById('drug-search-dropdown');
+    if(!d.results?.length){dd.classList.remove('show');return;}
+    dd.innerHTML=d.results.slice(0,6).map(r=>`
+      <div class="search-result-item" onclick="selectDrug('${r.drug_name}')">
+        <div><div style="font-weight:600;color:var(--text)">${r.drug_name}</div>
+          <div style="font-size:.73rem;color:var(--text3)">${r.drug_class||'Pharmaceutical'} · ${r.condition||''}</div></div>
+        <span class="badge ${r.prescription_required?'badge-warning':'badge-success'}">${r.prescription_required?'Rx':'OTC'}</span>
+      </div>`).join('');
+    dd.classList.add('show');
+  }catch{}
+}
+function selectDrug(name){
+  document.getElementById('drug-search-input').value=name;
+  document.getElementById('drug-search-dropdown').classList.remove('show');
+  execDrugSearch();
+}
+async function execDrugSearch(){
+  const q=document.getElementById('drug-search-input').value.trim();
+  document.getElementById('drug-search-dropdown').classList.remove('show');
+  const out=document.getElementById('drugsearch-results');
+  out.innerHTML='<div class="loader-wrap show"><div class="spinner"></div></div>';
+  try{
+    const d=await apiFetch(`/api/drug/search/?q=${encodeURIComponent(q)}&limit=100`);
+    if(!d.results?.length){out.innerHTML=`<div class="card"><div style="text-align:center;padding:30px;color:var(--text3)">No drugs found${q?` for "${q}"`:''}</div></div>`;return;}
+    out.innerHTML=`<div style="font-size:.82rem;color:var(--text3);margin-bottom:12px">${d.total} result(s)${q?` for "<strong>${q}</strong>"`:` — browsing all ${d.database_size} drugs`}</div>
+      <div class="grid-3">${d.results.map(r=>`
+        <div class="drug-card" style="cursor:pointer" onclick="goToReport('${r.drug_name}')">
+          <div class="drug-name">${r.drug_name}</div>
+          <div class="drug-class">${r.drug_class||'Pharmaceutical'}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">
+            ${r.condition?`<span class="badge badge-primary">${r.condition}</span>`:''}
+            <span class="badge ${r.prescription_required?'badge-warning':'badge-success'}">${r.prescription_required?'Rx':'OTC'}</span>
+          </div>
+          ${r.price_inr?`<div style="margin-top:8px;font-size:.75rem;color:var(--text3)">💰 ${r.price_inr}</div>`:''}
+          <div style="margin-top:10px;font-size:.73rem;color:var(--primary)">→ Click for full report</div>
+        </div>`).join('')}</div>`;
+  }catch(e){out.innerHTML=`<div class="alert alert-error show">❌ ${e.message}</div>`;}
+}
+function goToReport(name){
+  navigate('report',document.querySelector('[onclick*=report]'));
+  document.getElementById('report-drug-input').value=name;
+  generateDrugReport();
+}
+
+/* ── DRUG REPORT ── */
+async function generateDrugReport(){
+  const drug=document.getElementById('report-drug-input').value.trim();
+  clearAlert('report-alert');
+  if(!drug){showAlert('report-alert','⚠️ Please enter a drug name.','warning');return;}
+  setLoad('report-loader',true);
+  document.getElementById('report-output').innerHTML='';
+  try{
+    const d=await apiFetch(`/api/drug/report/?drug=${encodeURIComponent(drug)}`);
+    if(!d.found_in_database){
+      document.getElementById('report-output').innerHTML=`<div class="card">
+        <div class="alert alert-warning show">ℹ️ Full profile not available for "${drug}". ${d.review_data?`Found ${d.review_data.total_reviews} reviews, avg rating ${d.review_data.avg_rating}/10.`:''}</div>
+        <p style="margin-top:8px;font-size:.83rem;color:var(--text2)">${d.message||''}</p></div>`;
+      return;
+    }
+    document.getElementById('report-output').innerHTML=`
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+        <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadDrugReportPDF('${d.drug_name}')">⬇️ Download PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV('${d.drug_name}')">📊 Export CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="goToBuy('${d.drug_name}')">🛒 Where to Buy</button>
+      </div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-size:1.25rem;font-weight:800;font-family:'Syne',sans-serif">${d.drug_name}</div>
+              <div style="color:var(--text3);font-size:.83rem">${d.generic_name}</div>
+              <div style="margin-top:6px"><span class="badge badge-purple">${d.drug_class}</span></div>
+            </div>
+            <span class="badge ${d.prescription_required?'badge-warning':'badge-success'}">${d.prescription_required?'🔒 Rx':'✅ OTC'}</span>
+          </div>
+          <div class="report-section"><div class="report-label">Description</div><div class="report-value">${d.description}</div></div>
+          <div class="report-section"><div class="report-label">Brand Names</div><div class="report-tags">${(d.brand_names||[]).map(b=>`<span class="report-tag">${b}</span>`).join('')}</div></div>
+          <div class="report-section"><div class="report-label">Medical Uses</div><div class="report-tags">${(d.uses||[]).map(u=>`<span class="report-tag">${u}</span>`).join('')}</div></div>
+          <div class="report-section"><div class="report-label">Dosage</div><div class="report-value">${Object.entries(d.dosage||{}).map(([k,v])=>`<strong>${k}:</strong> ${v}`).join('<br>')}</div></div>
+          <div class="report-section"><div class="report-label">💰 Estimated Price</div><div style="font-size:1rem;font-weight:700;color:var(--primary)">${d.price_estimate}</div></div>
+          ${d.review_data?.total_reviews>0?`<div style="display:flex;gap:20px;padding-top:12px;border-top:1px solid var(--border)">
+            <div><div class="report-label">Reviews</div><div style="font-size:1.1rem;font-weight:700;color:var(--primary)">${d.review_data.total_reviews}</div></div>
+            <div><div class="report-label">Avg Rating</div><div style="font-size:1.1rem;font-weight:700;color:var(--success)">${d.review_data.avg_rating}/10</div></div>
+          </div>`:''}
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">🛡️ Safety Profile</div>
+            ${safetyRow('Pregnancy',d.pregnancy_safety)}
+            ${safetyRow('Breastfeeding',d.breastfeeding_safety)}
+            ${safetyRow('Kidney Warning',d.kidney_warning)}
+            ${safetyRow('Liver Warning',d.liver_warning)}
+            ${safetyRow('Manufacturer',d.manufacturer)}
+            ${safetyRow('Availability',d.availability)}
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">⚡ Side Effects</div>
+            <div class="report-tags">${(d.side_effects||[]).map(s=>`<span class="report-tag" style="border-color:var(--warning);color:var(--warning)">${s}</span>`).join('')}</div>
+          </div>
+          <div class="card">
+            <div class="card-title">🔄 Alternatives</div>
+            <div class="report-tags">${(d.alternatives||[]).map(a=>`<span class="report-tag" style="cursor:pointer;border-color:var(--primary);color:var(--primary)" onclick="goToReport('${a}')">${a}</span>`).join('')}</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-bottom:16px">
+        <div class="card"><div class="card-title">🚫 Contraindications</div><ul class="disease-list">${(d.contraindications||[]).map(c=>`<li>${c}</li>`).join('')}</ul></div>
+        <div class="card"><div class="card-title">💊 Drug Interactions</div><ul class="disease-list">${(d.drug_interactions||[]).map(i=>`<li>${i}</li>`).join('')}</ul></div>
+        <div class="card"><div class="card-title">🍽️ Food Interactions</div><ul class="disease-list">${(d.food_interactions||[]).map(f=>`<li>${f}</li>`).join('')}</ul></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📦 Storage &amp; Administration</div>
+        <div class="grid-3">
+          <div><div class="report-label">Storage</div><div class="report-value" style="font-size:.84rem">${d.storage_instructions}</div></div>
+          <div><div class="report-label">Missed Dose</div><div class="report-value" style="font-size:.84rem">${d.missed_dose_instructions}</div></div>
+          <div><div class="report-label">Overdose</div><div class="report-value" style="font-size:.84rem;color:var(--danger)">${d.overdose_information}</div></div>
+        </div>
+        <div class="warning-box" style="margin-top:14px">⚠️ ${d.disclaimer}</div>
+      </div>`;
+    toast('Report generated!','success');
+  }catch(e){showAlert('report-alert','❌ '+e.message,'error');}
+  finally{setLoad('report-loader',false);}
+}
+function safetyRow(label,val){
+  return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.83rem"><span style="color:var(--text3)">${label}</span><span style="color:var(--text2);max-width:65%;text-align:right">${val||'—'}</span></div>`;
+}
+function downloadDrugReportPDF(name){
+  window.open(`/api/drug/report/pdf/?drug=${encodeURIComponent(name)}&download=1`,'_blank');
+}
+function exportCSV(name){
+  // Minimal export — user can extend
+  const csv=`Drug Name,${name}\nReport Date,${new Date().toLocaleDateString()}\nGenerated By,IDPDR - An Intelligent Disease Prediction and Drug Recommendation Prototype`;
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`${name}_report.csv`;a.click();
+  toast('CSV exported!','success');
+}
+function goToBuy(name){
+  navigate('buydrug',document.querySelector('[onclick*=buydrug]'));
+  document.getElementById('buy-drug-input').value=name;
+  checkDrugAvailability();
+}
+
+/* ── RECOMMENDATIONS ── */
+let recInit=false;
+function initRecConditions(){
+  if(recInit)return;
+  const sel=document.getElementById('rec-condition');
+  Object.keys(SYMPTOMS_MAP).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  recInit=true;
+}
+async function loadRecommendations(){
+  const cond=document.getElementById('rec-condition').value;
+  clearAlert('rec-alert');
+  if(!cond){showAlert('rec-alert','⚠️ Please select a condition.');return;}
+  setLoad('rec-loader',true);
+  document.getElementById('rec-output').innerHTML='';
+  try{
+    const d=await apiFetch(`/api/recommend/?condition=${encodeURIComponent(cond)}`);
+    document.getElementById('rec-output').innerHTML=`
+      <div style="margin-bottom:14px;font-size:.83rem;color:var(--text3)">Top <strong style="color:var(--text)">${d.recommendations?.length||0}</strong> drugs for <strong style="color:var(--primary)">${d.condition}</strong></div>
+      <div class="grid-3">${(d.recommendations||[]).map((r,i)=>`
+        <div class="drug-card">
+          <div class="drug-rank">${r.rank}</div>
+          <div style="margin-bottom:6px"><span class="badge badge-${i===0?'success':'primary'}">${r.badge}</span></div>
+          <div class="drug-name">${r.drug_name}</div>
+          <div class="drug-class">${r.generic_name||r.drug_name}${r.drug_class?' · '+r.drug_class:''}</div>
+          <div style="display:flex;gap:14px;font-size:.8rem;margin-top:10px">
+            <div><div style="color:var(--text3);font-size:.7rem">Score</div><div style="font-weight:700;color:var(--primary)">${r.final_score}/10</div></div>
+            <div><div style="color:var(--text3);font-size:.7rem">Rating</div><div style="font-weight:700">${r.avg_rating}/10</div></div>
+            <div><div style="color:var(--text3);font-size:.7rem">Reviews</div><div style="font-weight:700">${r.review_count}</div></div>
+          </div>
+          <div class="progress-wrap" style="margin-top:10px"><div class="progress-bar ${i===0?'success':'primary'}" style="width:${r.strength_pct}%"></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            ${r.price_inr?`<span style="font-size:.73rem;color:var(--text3)">💰 ${r.price_inr}</span>`:'<span></span>'}
+            <span class="badge ${r.prescription_required?'badge-warning':'badge-success'}">${r.prescription_required?'Rx':'OTC'}</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <button class="btn btn-primary btn-sm" style="flex:1" onclick="goToReport('${r.drug_name}')">📋 Report</button>
+            <button class="btn btn-secondary btn-sm" onclick="goToBuy('${r.drug_name}')">🛒 Buy</button>
+          </div>
+        </div>`).join('')}</div>
+      <div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.75rem;color:var(--text3);margin-top:12px">📊 ${d.methodology}</div>`;
+    toast('Recommendations loaded!','success');
+  }catch(e){showAlert('rec-alert','❌ '+e.message);}
+  finally{setLoad('rec-loader',false);}
+}
+
+/* ── SMART RECOMMEND ── */
+async function runSmartRecommend(){
+  const symptoms=document.getElementById('sr-symptoms').value.trim();
+  const age=document.getElementById('sr-age').value;
+  const gender=document.getElementById('sr-gender').value;
+  const allergies=document.getElementById('sr-allergies').value.split(',').map(s=>s.trim()).filter(Boolean);
+  clearAlert('sr-alert');
+  if(!symptoms){showAlert('sr-alert','⚠️ Please describe your symptoms.');return;}
+  setLoad('sr-loader',true);document.getElementById('sr-output').innerHTML='';
+  try{
+    const d=await apiFetch('/api/smart-recommend/',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body:JSON.stringify({symptoms,age:age||null,gender,allergies})});
+    const choiceColor={'First Choice':'success','Alternative':'primary','Second-Line':'purple'};
+    document.getElementById('sr-output').innerHTML=`
+      <div class="card" style="margin-bottom:14px;text-align:center;padding:16px">
+        <div style="font-size:.72rem;color:var(--text3);margin-bottom:5px">PREDICTED CONDITION</div>
+        <div style="font-size:1.4rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--primary)">${d.predicted_condition}</div>
+        <div style="margin-top:6px"><span class="badge badge-success">${d.confidence||'~'}% match</span></div>
+      </div>
+      ${d.age_notes?.length?`<div class="alert alert-warning show" style="margin-bottom:12px">⚠️ ${d.age_notes.join(' | ')}</div>`:''}
+      ${(d.recommendations||[]).map((r,i)=>`
+        <div class="drug-card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between">
+            <div>
+              <span class="badge badge-${['success','primary','purple'][Math.min(i,2)]}" style="margin-bottom:7px">${r.choice_label}</span>
+              <div class="drug-name">${r.drug_name}</div>
+              <div class="drug-class">${r.generic_name||r.drug_name}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:1.1rem;font-weight:700;color:var(--primary)">${r.final_score}/10</div>
+              <div style="font-size:.7rem;color:var(--text3)">${r.review_count} reviews</div>
+            </div>
+          </div>
+          <div class="progress-wrap" style="margin-top:10px"><div class="progress-bar ${i===0?'success':'primary'}" style="width:${r.confidence}%"></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            <span style="font-size:.75rem;color:var(--text3)">${r.price_inr||''}</span>
+            <div style="display:flex;gap:6px">
+              <span class="badge ${r.prescription_required?'badge-warning':'badge-success'}">${r.prescription_required?'Rx':'OTC'}</span>
+              <button class="btn btn-primary btn-sm" onclick="goToReport('${r.drug_name}')">📋</button>
+            </div>
+          </div>
+        </div>`).join('')}
+      <div class="warning-box">⚠️ ${d.disclaimer}</div>`;
+    toast('AI recommendations ready!','success');
+  }catch(e){showAlert('sr-alert','❌ '+e.message);}
+  finally{setLoad('sr-loader',false);}
+}
+
+/* ── COMPARE ── */
+let cmpInit=false,cmpAllDrugs={};
+async function initCompareConditions(){
+  if(cmpInit)return;
+  const sel=document.getElementById('cmp-condition');
+  try{
+    const d=await apiFetch('/api/recommend/all/');
+    cmpAllDrugs=d.all||{};
+    Object.keys(cmpAllDrugs).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  }catch{
+    Object.keys(SYMPTOMS_MAP).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  }
+  cmpInit=true;
+}
+function updateDrugOptions(){
+  const cond=document.getElementById('cmp-condition').value;
+  ['cmp-drug-a','cmp-drug-b'].forEach(id=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='<option value="">Select drug...</option>';
+    (cmpAllDrugs[cond]?.top3||[]).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  });
+}
+async function runComparison(){
+  const cond=document.getElementById('cmp-condition').value;
+  const da=document.getElementById('cmp-drug-a').value;
+  const db=document.getElementById('cmp-drug-b').value;
+  const alertEl=document.getElementById('cmp-alert');alertEl.className='alert';alertEl.style.display='none';
+  if(!cond||!da||!db){alertEl.className='alert alert-error show';alertEl.style.display='flex';alertEl.textContent='⚠️ Select condition and both drugs.';return;}
+  if(da===db){alertEl.className='alert alert-warning show';alertEl.style.display='flex';alertEl.textContent='⚠️ Select two different drugs.';return;}
+  setLoad('cmp-loader',true);document.getElementById('cmp-output').innerHTML='';
+  try{
+    const params=new URLSearchParams({condition:cond,drug_a:da,drug_b:db});
+    const d=await apiFetch(`/api/compare/?${params}`);
+    const[A,B]=[d.drug_a,d.drug_b];
+    document.getElementById('cmp-output').innerHTML=`
+      <div class="card" style="margin-bottom:14px;text-align:center">
+        <div style="font-size:.72rem;color:var(--text3);margin-bottom:6px">WINNER</div>
+        <div style="font-size:1.4rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--success)">🏆 ${d.winner}</div>
+        <div style="font-size:.78rem;color:var(--text3);margin-top:4px">Margin: ${d.margin} points</div>
+      </div>
+      <div class="table-wrap" style="margin-bottom:16px">
+        <table class="compare-table">
+          <thead><tr>
+            <th>Metric</th>
+            <th style="${A.drug_name===d.winner?'background:var(--success-dim);color:var(--success)':''}">${A.drug_name}${A.drug_name===d.winner?' 🏆':''}</th>
+            <th style="${B.drug_name===d.winner?'background:var(--success-dim);color:var(--success)':''}">${B.drug_name}${B.drug_name===d.winner?' 🏆':''}</th>
+          </tr></thead>
+          <tbody>
+            ${cmpRow('Drug Class',A.drug_class||'—',B.drug_class||'—')}
+            ${cmpRow('Generic Name',A.generic_name||A.drug_name,B.generic_name||B.drug_name)}
+            ${cmpRowN('Avg Rating',A.avg_rating,B.avg_rating,'/10')}
+            ${cmpRowN('Sentiment Score',A.sentiment_score,B.sentiment_score,'/10')}
+            ${cmpRowN('Final Score',A.final_score,B.final_score,'/10')}
+            ${cmpRowN('Review Count',A.review_count,B.review_count,' reviews')}
+            ${cmpRow('Prescription',A.prescription_required?'Required':'OTC',B.prescription_required?'Required':'OTC')}
+            ${cmpRow('Pregnancy',A.pregnancy||'—',B.pregnancy||'—')}
+            ${cmpRow('Price (INR)',A.price_inr||'N/A',B.price_inr||'N/A')}
+            ${cmpRow('Recommendation',A.recommendation_strength,B.recommendation_strength)}
+          </tbody>
+        </table>
+      </div>
+      <div class="grid-2">
+        ${[A,B].map(drug=>`
+          <div class="card">
+            <div class="card-title">⚡ ${drug.drug_name} — Side Effects</div>
+            <div class="report-tags">${(drug.side_effects||[]).map(s=>`<span class="report-tag" style="border-color:var(--warning);color:var(--warning)">${s}</span>`).join('')||'<span style="color:var(--text3)">N/A</span>'}</div>
+            <div style="margin-top:10px"><div class="report-label">Kidney Safety</div><div style="font-size:.82rem;color:var(--text2)">${drug.kidney_warning||'—'}</div></div>
+          </div>`).join('')}
+      </div>`;
+    toast(`Winner: ${d.winner}`,'success');
+  }catch(e){alertEl.className='alert alert-error show';alertEl.style.display='flex';alertEl.textContent='❌ '+e.message;}
+  finally{setLoad('cmp-loader',false);}
+}
+function cmpRow(l,a,b){return `<tr><td><strong>${l}</strong></td><td>${a}</td><td>${b}</td></tr>`;}
+function cmpRowN(l,a,b,s=''){const aw=a>b,bw=b>a;return `<tr><td><strong>${l}</strong></td><td class="${aw?'compare-winner':''}">${a}${s}</td><td class="${bw?'compare-winner':''}">${b}${s}</td></tr>`;}
+
+/* ── INTERACTIONS ── */
+let iDrugs=[];
+function addInteractionDrug(){
+  const inp=document.getElementById('interaction-drug-input');
+  const drug=inp.value.trim();if(!drug)return;
+  if(iDrugs.includes(drug)){toast('Already added','warning');return;}
+  if(iDrugs.length>=10){toast('Max 10 drugs','warning');return;}
+  iDrugs.push(drug);inp.value='';renderPills();
+}
+function removeIDrug(d){iDrugs=iDrugs.filter(x=>x!==d);renderPills();}
+function clearInteractionDrugs(){iDrugs=[];renderPills();document.getElementById('interaction-output').innerHTML='';}
+function renderPills(){
+  document.getElementById('interaction-drug-list').innerHTML=
+    iDrugs.map(d=>`<div class="drug-pill">${d}<span class="remove" onclick="removeIDrug('${d}')">✕</span></div>`).join('');
+}
+document.getElementById('interaction-drug-input').addEventListener('keydown',e=>{if(e.key==='Enter')addInteractionDrug();});
+async function checkInteractions(){
+  if(iDrugs.length<2){toast('Add at least 2 drugs','warning');return;}
+  setLoad('inter-loader',true);document.getElementById('interaction-output').innerHTML='';
+  try{
+    const d=await apiFetch('/api/interactions/',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body:JSON.stringify({drugs:iDrugs})});
+    if(!d.interactions?.length){
+      document.getElementById('interaction-output').innerHTML=`<div class="card" style="text-align:center;padding:30px">
+        <div style="font-size:2rem;margin-bottom:10px">✅</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--success)">No Known Interactions Found</div>
+        <div style="font-size:.82rem;color:var(--text3);margin-top:8px">Checked: ${iDrugs.join(', ')}</div>
+        <div class="warning-box" style="margin-top:14px;text-align:left">⚠️ ${d.disclaimer}</div></div>`;
+      toast('No interactions ✅','success');return;
+    }
+    const cnt={major:0,moderate:0,minor:0};
+    d.interactions.forEach(i=>cnt[i.severity]=(cnt[i.severity]||0)+1);
+    document.getElementById('interaction-output').innerHTML=`
+      <div class="grid-3" style="margin-bottom:14px">
+        <div class="card" style="text-align:center;border-left:3px solid var(--danger)"><div style="font-size:1.5rem;font-weight:700;color:var(--danger)">${cnt.major||0}</div><div style="font-size:.75rem;color:var(--text3)">Major</div></div>
+        <div class="card" style="text-align:center;border-left:3px solid var(--warning)"><div style="font-size:1.5rem;font-weight:700;color:var(--warning)">${cnt.moderate||0}</div><div style="font-size:.75rem;color:var(--text3)">Moderate</div></div>
+        <div class="card" style="text-align:center;border-left:3px solid var(--success)"><div style="font-size:1.5rem;font-weight:700;color:var(--success)">${cnt.minor||0}</div><div style="font-size:.75rem;color:var(--text3)">Minor</div></div>
+      </div>
+      ${d.interactions.map(i=>`
+        <div class="severity-${i.severity}">
+          <div class="severity-label">⚠️ ${i.severity.toUpperCase()} INTERACTION</div>
+          <div style="font-size:.9rem;font-weight:600;margin-bottom:5px">${i.drug1} + ${i.drug2}</div>
+          <div style="font-size:.83rem;margin-bottom:8px">${i.description}</div>
+          <div style="font-size:.79rem;background:rgba(0,0,0,.15);padding:8px 10px;border-radius:6px"><strong>Recommendation:</strong> ${i.recommendation}</div>
+        </div>`).join('')}
+      <div class="warning-box">${d.disclaimer}</div>`;
+    toast(d.summary,d.has_major?'error':'warning');
+  }catch(e){document.getElementById('interaction-output').innerHTML=`<div class="alert alert-error show">❌ ${e.message}</div>`;}
+  finally{setLoad('inter-loader',false);}
+}
+
+/* ── DISEASE INFO ── */
+async function loadDiseaseInfo(){
+  const cond=document.getElementById('disease-select').value;if(!cond)return;
+  setLoad('disease-loader',true);document.getElementById('disease-output').innerHTML='';
+  try{
+    const d=await apiFetch(`/api/disease/?condition=${encodeURIComponent(cond)}`);
+    document.getElementById('disease-output').innerHTML=`
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-size:1.15rem;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:7px">${d.condition}</div>
+        <div style="font-size:.88rem;color:var(--text2);line-height:1.7">${d.description}</div>
+      </div>
+      <div class="grid-3">
+        <div class="disease-section"><h3>🤒 Symptoms</h3><ul class="disease-list">${(d.symptoms||[]).map(s=>`<li>${s}</li>`).join('')}</ul></div>
+        <div class="disease-section"><h3>🔍 Causes</h3><ul class="disease-list">${(d.causes||[]).map(c=>`<li>${c}</li>`).join('')}</ul></div>
+        <div class="disease-section"><h3>⚠️ Risk Factors</h3><ul class="disease-list">${(d.risk_factors||[]).map(r=>`<li>${r}</li>`).join('')}</ul></div>
+        <div class="disease-section"><h3>🔬 Diagnosis</h3><ul class="disease-list">${(d.diagnosis||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+        <div class="disease-section"><h3>💊 Treatment</h3><ul class="disease-list">${(d.treatment||[]).map(t=>`<li>${t}</li>`).join('')}</ul></div>
+        <div class="disease-section"><h3>🛡️ Prevention</h3><ul class="disease-list">${(d.prevention||[]).map(p=>`<li>${p}</li>`).join('')}</ul></div>
+      </div>
+      <div class="grid-2" style="margin-top:12px">
+        <div class="disease-section"><h3>🏃 Lifestyle Changes</h3><ul class="disease-list">${(d.lifestyle_changes||[]).map(l=>`<li>${l}</li>`).join('')}</ul></div>
+        <div class="emergency-box">
+          <h3>🚨 Emergency Warning Signs</h3>
+          <ul class="disease-list">${(d.emergency_warning_signs||[]).map(e=>`<li style="color:var(--danger)">${e}</li>`).join('')}</ul>
+          <div style="margin-top:8px;font-size:.75rem;font-weight:600;color:var(--danger)">Seek immediate medical attention if you experience these!</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">💊 Related Medicines</div>
+        <div class="report-tags">${(d.related_medicines||[]).map(m=>`<span class="report-tag" style="cursor:pointer;border-color:var(--primary);color:var(--primary)" onclick="goToReport('${m}')">${m}</span>`).join('')}</div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="quickRecommend('${d.condition}')">💊 Get Recommendations</button>
+          <button class="btn btn-secondary btn-sm" onclick="goToReport(document.getElementById('disease-select').value)">📋 Drug Report</button>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:10px">⚠️ ${d.disclaimer}</div>`;
+    toast('Disease info loaded!','success');
+  }catch(e){document.getElementById('disease-output').innerHTML=`<div class="alert alert-error show">❌ ${e.message}</div>`;}
+  finally{setLoad('disease-loader',false);}
+}
+
+/* ── WHERE TO BUY ── */
+async function checkDrugAvailability(){
+  const drug=document.getElementById('buy-drug-input').value.trim();
+  if(!drug){toast('Enter a drug name','warning');return;}
+  setLoad('buy-loader',true);document.getElementById('buy-output').innerHTML='';
+  try{
+    const d=await apiFetch(`/api/drug/buy/?drug=${encodeURIComponent(drug)}`);
+    document.getElementById('buy-output').innerHTML=`
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px">${d.drug_name}</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <span class="badge ${d.prescription_required?'badge-warning':'badge-success'}">${d.prescription_required?'🔒 Prescription Required':'✅ Over The Counter'}</span>
+              <span class="badge badge-primary">${d.availability}</span>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:.72rem;color:var(--text3)">Est. Price</div>
+            <div style="font-size:1.05rem;font-weight:700;color:var(--primary)">${d.estimated_price}</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-bottom:14px">
+        ${(d.online_options||[]).map(opt=>`
+          <div class="card" style="text-align:center">
+            <div style="font-size:.9rem;font-weight:700;margin-bottom:5px">${opt.platform}</div>
+            <div style="font-size:.75rem;color:var(--text3);margin-bottom:10px">${opt.note}</div>
+            <a href="${opt.url}" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">🛒 View Platform</a>
+          </div>`).join('')}
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">💰 Generic Alternatives</div>
+        <div class="report-tags">${(d.generic_alternatives||[]).map(g=>`<span class="report-tag" style="color:var(--success);border-color:var(--success)">${g}</span>`).join('')||'<span style="color:var(--text3)">Consult pharmacist</span>'}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ Safety Notice</div>
+        ${(d.important_notice||[]).map(n=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:.83rem;color:var(--text2)">${n}</div>`).join('')}
+        <div class="warning-box" style="margin-top:12px">${d.disclaimer}</div>
+      </div>`;
+    toast('Availability info loaded!','success');
+  }catch(e){document.getElementById('buy-output').innerHTML=`<div class="alert alert-error show">❌ ${e.message}</div>`;}
+  finally{setLoad('buy-loader',false);}
+}
+
+/* ── SENTIMENT ── */
+async function runSentiment(){
+  const review=document.getElementById('sent-review').value.trim();
+  clearAlert('sent-alert');
+  if(!review){showAlert('sent-alert','⚠️ Please enter a review.');return;}
+  try{
+    const d=await apiFetch('/api/sentiment/',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body:JSON.stringify({review,drug_name:document.getElementById('sent-drug').value||'Unknown',
+        condition:document.getElementById('sent-condition').value||'Unknown',
+        rating:document.getElementById('sent-rating').value||7})});
+    const sc={positive:'#10DFAA',negative:'#FF4D6D',neutral:'#FFB020'};
+    document.getElementById('sent-result-card').style.display='block';
+    document.getElementById('sent-output').innerHTML=`
+      <div style="text-align:center;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
+        <div style="font-size:2rem;margin-bottom:5px">${{positive:'😊',negative:'😞',neutral:'😐'}[d.sentiment]}</div>
+        <div style="font-size:1.1rem;font-weight:800;font-family:'Syne',sans-serif;color:${sc[d.sentiment]}">${d.sentiment_label}</div>
+        <div style="font-size:.78rem;color:var(--text3);margin-top:4px">Compound: ${d.scores.compound}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;text-align:center">
+        ${[['Positive',d.scores.positive,'#10DFAA'],['Negative',d.scores.negative,'#FF4D6D'],['Neutral',d.scores.neutral,'#FFB020']].map(([l,v,c])=>
+          `<div><div style="font-size:1rem;font-weight:700;color:${c}">${(v*100).toFixed(1)}%</div><div style="font-size:.7rem;color:var(--text3)">${l}</div></div>`).join('')}
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${d.scores.positive*100}%;background:${sc[d.sentiment]}"></div></div>
+      <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.79rem;color:var(--text3)">${d.interpretation}</div>`;
+    toast('Sentiment: '+d.sentiment,'success');
+    loadRecentReviews();
+  }catch(e){showAlert('sent-alert','❌ '+e.message);}
+}
+async function loadRecentReviews(){
+  try{
+    const d=await apiFetch('/api/reviews/');
+    const c=document.getElementById('recent-reviews-table');
+    if(!d.reviews?.length){c.innerHTML='<div style="color:var(--text3);text-align:center;padding:20px;font-size:.83rem">No reviews yet.</div>';return;}
+    c.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>Drug</th><th>Rating</th><th>Sentiment</th><th>Date</th></tr></thead>
+      <tbody>${d.reviews.map(r=>`<tr>
+        <td><strong>${r.drug}</strong><br><span style="font-size:.7rem;color:var(--text3)">${r.condition}</span></td>
+        <td><span class="badge badge-primary">${r.rating}/10</span></td>
+        <td><span class="badge badge-${{positive:'success',negative:'danger',neutral:'warning'}[r.sentiment]||'primary'}">${r.sentiment}</span></td>
+        <td style="color:var(--text3)">${r.date}</td></tr>`).join('')}</tbody></table></div>`;
+  }catch{}
+}
+
+/* ── ANALYTICS ── */
+let analyticsLoaded=false,trendsChart=null;
+async function loadAnalytics(){
+  if(analyticsLoaded)return;
+  try{
+    const[dash,preds]=await Promise.all([apiFetch('/api/dashboard/'),apiFetch('/api/predictions/')]);
+    document.getElementById('analytics-stats').innerHTML=`
+      <div class="card"><div class="card-title">Total Reviews</div><div class="card-value" id="an-reviews">0</div><div class="card-sub">Analyzed</div></div>
+      <div class="card"><div class="card-title">Predictions</div><div class="card-value" id="an-preds">0</div><div class="card-sub">ML diagnoses</div></div>
+      <div class="card"><div class="card-title">Comparisons</div><div class="card-value" id="an-comps">0</div><div class="card-sub">Drug comparisons</div></div>
+      <div class="card"><div class="card-title">Models Active</div><div class="card-value" id="an-models">0</div><div class="card-sub">ML models loaded</div></div>`;
+    setTimeout(()=>{
+      animateCount(document.getElementById('an-reviews'),dash.total_reviews||0);
+      animateCount(document.getElementById('an-preds'),dash.total_predictions||0);
+      animateCount(document.getElementById('an-comps'),dash.total_comparisons||0);
+      animateCount(document.getElementById('an-models'),dash.models_available||0);
+    },100);
+    const ctx=document.getElementById('chart-trends');
+    if(ctx){if(trendsChart)trendsChart.destroy();
+      const colors=['#00C2FF','#10DFAA','#8B5CF6'];
+      trendsChart=new Chart(ctx,{type:'line',
+        data:{labels:dash.trend_months||[],datasets:(dash.trend_series||[]).map((s,i)=>({
+          label:`Series ${i+1}`,data:s,borderColor:colors[i],backgroundColor:colors[i]+'22',fill:true,tension:.4,pointRadius:3}))},
+        options:{plugins:{legend:{labels:{color:'#94A3B8',font:{size:11}}}},
+          scales:{x:{ticks:{color:'#94A3B8'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#94A3B8'},grid:{color:'rgba(255,255,255,0.04)'}}}}});}
+    const condList=document.getElementById('top-conditions-list');
+    if(dash.top_predicted_conditions?.length){
+      condList.innerHTML=dash.top_predicted_conditions.map((c,i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="width:22px;height:22px;background:var(--primary-dim);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">${i+1}</span>
+            <span style="font-size:.86rem">${c.predicted_condition}</span>
+          </div>
+          <span class="badge badge-primary">${c.count}</span>
+        </div>`).join('');
+    }else{condList.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:.83rem">No predictions yet. Run some diagnoses!</div>';}
+    const predLog=document.getElementById('pred-log-table');
+    if(preds.predictions?.length){
+      predLog.innerHTML=`<div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Condition</th><th>Symptoms</th><th>Date</th></tr></thead>
+        <tbody>${preds.predictions.map(p=>`<tr>
+          <td style="color:var(--text3)">${p.id}</td>
+          <td><span class="badge badge-primary">${p.condition}</span></td>
+          <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)">${p.symptoms}</td>
+          <td style="color:var(--text3)">${p.date}</td></tr>`).join('')}</tbody></table></div>`;
+    }else{predLog.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:.83rem">No predictions yet.</div>';}
+    analyticsLoaded=true;
+  }catch(e){toast('Analytics failed: '+e.message,'error');}
+}
+
+/* ── MY PROFILE / ACCOUNT SETTINGS ── */
+let profileLoaded=false;
+function showProfileTab(tab){
+  document.querySelectorAll('.profile-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.profile-panel').forEach(p=>p.style.display='none');
+  document.getElementById('profile-tab-'+tab).classList.add('active');
+  document.getElementById('profile-panel-'+tab).style.display='block';
+}
+async function loadProfilePage(){
+  try{
+    const d=await apiFetch('/api/auth/me/');
+    CURRENT_USER=d;
+    document.getElementById('prof-first-name').value=d.first_name||'';
+    document.getElementById('prof-last-name').value=d.last_name||'';
+    document.getElementById('prof-email').value=d.email||'';
+    document.getElementById('prof-phone').value=d.phone||'';
+    document.getElementById('prof-age').value=d.age||'';
+    document.getElementById('prof-gender').value=d.gender||'';
+    document.getElementById('prof-bio').value=d.bio||'';
+    document.getElementById('notif-email').checked=d.email_notifications!==false;
+  }catch(e){toast('Failed to load profile: '+e.message,'error');}
+}
+async function saveProfileInfo(){
+  try{
+    await apiFetch('/api/auth/profile/update/',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        first_name:document.getElementById('prof-first-name').value,
+        last_name:document.getElementById('prof-last-name').value,
+        email:document.getElementById('prof-email').value,
+        phone:document.getElementById('prof-phone').value,
+        age:document.getElementById('prof-age').value,
+        gender:document.getElementById('prof-gender').value,
+        bio:document.getElementById('prof-bio').value,
+      })});
+    toast('Profile updated!','success');
+    const initial=(document.getElementById('prof-first-name').value?.[0]||CURRENT_USER.username[0]).toUpperCase();
+    document.getElementById('user-name-display').textContent=document.getElementById('prof-first-name').value||CURRENT_USER.username;
+    document.getElementById('user-avatar').textContent=initial;
+    document.getElementById('pd-avatar').textContent=initial;
+    document.getElementById('pd-name').textContent=`${document.getElementById('prof-first-name').value} ${document.getElementById('prof-last-name').value}`.trim()||CURRENT_USER.username;
+  }catch(e){toast('Update failed: '+e.message,'error');}
+}
+async function changePassword(){
+  const cur=document.getElementById('cp-current').value;
+  const n1=document.getElementById('cp-new').value;
+  const n2=document.getElementById('cp-confirm').value;
+  if(!cur||!n1){toast('Please fill in all password fields.','warning');return;}
+  if(n1.length<6){toast('New password must be at least 6 characters.','warning');return;}
+  if(n1!==n2){toast('New passwords do not match.','warning');return;}
+  try{
+    await apiFetch('/api/auth/change-password/',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({current_password:cur,new_password:n1})});
+    toast('Password changed successfully!','success');
+    document.getElementById('cp-current').value='';
+    document.getElementById('cp-new').value='';
+    document.getElementById('cp-confirm').value='';
+  }catch(e){toast('Failed: '+e.message,'error');}
+}
+async function saveNotifPrefs(){
+  try{
+    await apiFetch('/api/auth/profile/update/',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email_notifications:document.getElementById('notif-email').checked})});
+    toast('Notification preference saved!','success');
+  }catch(e){toast('Failed: '+e.message,'error');}
+}
+
+window.addEventListener('DOMContentLoaded',async()=>{await ensureCSRF();loadHomeDash();});
+</script>
+<!-- PWA bootstrap: service worker registration + install prompt banner -->
+<script src="{% static 'js/pwa-register.js' %}"></script>
+</body>
+</html>

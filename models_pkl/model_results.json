@@ -1,0 +1,6 @@
+{
+  "naive_bayes": 1.0,
+  "random_forest": 1.0,
+  "svm": 1.0,
+  "logistic_regression": 1.0
+}

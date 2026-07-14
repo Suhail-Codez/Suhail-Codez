@@ -1,0 +1,276 @@
+/* ==========================================================================
+   IDPDR — Responsive / PWA Layer
+   --------------------------------------------------------------------------
+   This file is loaded AFTER each page's inline <style> block, so rules of
+   equal specificity here win the cascade and can safely "patch" the
+   existing design without touching business logic or deleting any of the
+   original CSS. Nothing in the app's JS, URLs, or data flow is changed by
+   this file — it only affects layout, spacing, and touch ergonomics.
+
+   Breakpoints covered (mobile-first, min-width unless noted):
+     320 / 375 / 390 / 414 / 480  -> phones
+     768                          -> tablets / phablets landscape
+     1024                         -> small laptops / iPad landscape
+     1440                         -> desktop
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Global resets & fluid foundations
+   -------------------------------------------------------------------------- */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;           /* kills the #1 mobile bug: horizontal scroll */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  min-width: 0; /* prevents flex/grid children from forcing overflow */
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fluid, responsive typography scale — scales smoothly between the
+   smallest (320px) and largest (1440px) breakpoints instead of jumping. */
+html {
+  font-size: clamp(14px, 3.2vw + 6px, 16px);
+}
+h1, .page-header h1 { font-size: clamp(1.25rem, 1rem + 1.4vw, 1.6rem) !important; }
+h2 { font-size: clamp(1.1rem, 0.95rem + 1vw, 1.4rem); }
+.card-value { font-size: clamp(1.3rem, 1rem + 1.6vw, 1.9rem) !important; }
+
+/* --------------------------------------------------------------------------
+   2. Touch-friendly interactive elements (WCAG 2.5.5 target size ~44x44px)
+   -------------------------------------------------------------------------- */
+.btn, button, .icon-btn, .hamburger, .nav-item, .sb-item,
+input[type="submit"], input[type="button"], a.btn {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+.icon-btn, .hamburger {
+  min-width: 44px;
+}
+input, select, textarea, .form-input, .form-select {
+  min-height: 44px;
+  font-size: 16px !important; /* stops iOS Safari auto-zoom-on-focus */
+}
+/* Small pill/badge/icon-only buttons keep their footprint but gain an
+   invisible hit-area so thumbs don't miss them. */
+.nav-badge, .pd-theme-opt {
+  position: relative;
+}
+
+/* Comfortable spacing on touch devices */
+@media (max-width: 768px) {
+  .btn, button { padding-top: 12px; padding-bottom: 12px; }
+  .form-group { margin-bottom: 20px !important; }
+  label { margin-bottom: 8px !important; }
+}
+
+/* --------------------------------------------------------------------------
+   3. Responsive tables — horizontal scroll wrapper + optional card view
+   -------------------------------------------------------------------------- */
+.table-responsive,
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.table-responsive table,
+.table-wrap table,
+table.data-table,
+table.compare-table {
+  min-width: 560px; /* keeps columns legible; wrapper handles the scroll */
+}
+
+/* On narrow phones, turn plain data tables into stacked "cards":
+   each <tr> becomes a block and each <td> shows its column header
+   (via data-label, added where present) above the value. Tables that
+   rely on side-by-side comparison (compare-table) keep scrolling instead,
+   since stacking would break the comparison. */
+@media (max-width: 480px) {
+  table.data-table.stack-on-mobile,
+  table.data-table {
+    min-width: 0;
+  }
+  table.data-table.stack-on-mobile thead {
+    display: none;
+  }
+  table.data-table.stack-on-mobile tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid var(--border, rgba(255,255,255,.08));
+    border-radius: var(--radius-sm, 8px);
+    padding: 8px 12px;
+  }
+  table.data-table.stack-on-mobile td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border: none !important;
+    padding: 6px 0 !important;
+  }
+  table.data-table.stack-on-mobile td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text3, #94A3B8);
+    margin-right: 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. Grids & cards — stack vertically on small screens
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .grid-4, .g4 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .g2, .g3, .grid-4, .g4 {
+    grid-template-columns: 1fr !important;
+  }
+  .card { padding: 16px !important; }
+}
+@media (max-width: 480px) {
+  .grid-4, .g4 { grid-template-columns: 1fr !important; }
+}
+
+/* --------------------------------------------------------------------------
+   5. Sidebar -> off-canvas drawer (applies to both patient & admin shells)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: 0 0 40px rgba(0,0,0,.4);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0 !important; }
+  .topbar { left: 0 !important; }
+  .hamburger { display: flex !important; }
+  .sidebar-overlay.show {
+    display: block !important;
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 190;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. Forms fit the screen; auth cards breathe on very small phones
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .card { max-width: 100% !important; }
+  body { padding: 12px !important; }
+}
+
+/* --------------------------------------------------------------------------
+   7. Charts & analytics canvases resize with their container
+   -------------------------------------------------------------------------- */
+canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+.chart-wrap, .chart-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   8. Navigation / topbar tidy-up at narrow widths
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .breadcrumb { display: none !important; }
+  .topbar { padding: 0 12px !important; gap: 10px !important; }
+  .topbar-title, #tb-title { font-size: .9rem !important; }
+  .topbar-actions .theme-badge span { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   9. Footer (added by the responsive layer where pages didn't have one)
+   -------------------------------------------------------------------------- */
+.app-footer {
+  text-align: center;
+  color: var(--text3, #64748b);
+  font-size: .78rem;
+  padding: 18px 12px calc(18px + env(safe-area-inset-bottom));
+}
+
+/* --------------------------------------------------------------------------
+   10. Safe-area support for notched iPhones when installed as PWA
+   -------------------------------------------------------------------------- */
+@supports (padding: max(0px)) {
+  .topbar { padding-top: env(safe-area-inset-top); }
+  .sidebar { padding-bottom: env(safe-area-inset-bottom); }
+  body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+}
+
+/* --------------------------------------------------------------------------
+   11. Exact-width smoke-test anchors (320/375/390/414/480/768/1024/1440)
+   -------------------------------------------------------------------------- */
+@media (max-width: 320px) { .card { padding: 12px !important; } .page-header p { font-size: .8rem !important; } }
+@media (min-width: 375px) and (max-width: 413px) { .grid-4, .g4 { grid-template-columns: 1fr !important; } }
+@media (min-width: 414px) and (max-width: 767px) { .grid-2, .g2 { grid-template-columns: 1fr !important; } }
+@media (min-width: 1025px) and (max-width: 1440px) { .main { padding: 32px !important; } }
+@media (min-width: 1441px) {
+  .main { max-width: 1600px; margin-left: auto; margin-right: auto; padding-left: calc(var(--sidebar-w, 256px) + 32px) !important; }
+}
+
+/* --------------------------------------------------------------------------
+   12. Reduced motion respect (accessibility)
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. Visible keyboard focus ring (accessibility — keyboard navigation)
+   -------------------------------------------------------------------------- */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, .nav-item:focus-visible,
+.sb-item:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--primary, #00C2FF) !important;
+  outline-offset: 2px !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. Install-prompt banner (used by pwa-register.js)
+   -------------------------------------------------------------------------- */
+.pwa-install-banner {
+  position: fixed;
+  left: 12px; right: 12px; bottom: 12px;
+  z-index: 999;
+  background: var(--surface, #111827);
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  color: var(--text, #F1F5F9);
+  font-family: inherit;
+}
+.pwa-install-banner.show { display: flex; }
+.pwa-install-banner button {
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pwa-install-banner .pwa-install-cta {
+  background: var(--primary, #00C2FF);
+  color: #000;
+}
+.pwa-install-banner .pwa-install-dismiss {
+  background: transparent;
+  color: var(--text2, #94A3B8);
+}
